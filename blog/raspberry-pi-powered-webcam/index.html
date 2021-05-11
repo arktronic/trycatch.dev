@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>Raspberry Pi-powered webcam</title>
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="preload" href="/assets/css/app.css?v=d450aebd8c" as="style" />
+    <link rel="preload" href="/assets/css/prism.css?v=d450aebd8c" as="style" />
+    <link rel="preload" href="/assets/js/manifest.js?v=d450aebd8c" as="script" />
+    <link rel="preload" href="/assets/js/vendor/content-api.min.js?v=d450aebd8c" as="script" />
+    <link rel="preload" href="/assets/js/vendor.js?v=d450aebd8c" as="script" />
+    <link rel="preload" href="/assets/js/app.js?v=d450aebd8c" as="script" />
+    <link rel="preload" href="/assets/js/prism.js?v=d450aebd8c" as="script" />
+    <link rel="preconnect" href="https://polyfill.io">
+    <link rel="dns-prefetch" href="https://polyfill.io">
+
+      <link rel="preload" href="/assets/css/post.css?v=d450aebd8c" as="style" />
+  <link rel="preload" href="/assets/js/post.js?v=d450aebd8c" as="script" />
+
+
+    <style>
+      /* These font-faces are here to make fonts work if the Ghost instance is installed in a subdirectory */
+
+      /* source-sans-pro-regular */
+      @font-face {
+        font-family: 'Source Sans Pro';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: local('Source Sans Pro Regular'), local('SourceSansPro-Regular'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-regular.woff2?v=d450aebd8c") format('woff2'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-regular.woff?v=d450aebd8c") format('woff');
+      }
+
+      /* source-sans-pro-600 */
+      @font-face {
+        font-family: 'Source Sans Pro';
+        font-style: normal;
+        font-weight: 600;
+        font-display: swap;
+        src: local('Source Sans Pro SemiBold'), local('SourceSansPro-SemiBold'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-600.woff2?v=d450aebd8c") format('woff2'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-600.woff?v=d450aebd8c") format('woff');
+      }
+
+      /* source-sans-pro-700 */
+      @font-face {
+        font-family: 'Source Sans Pro';
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-700.woff2?v=d450aebd8c") format('woff2'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-700.woff?v=d450aebd8c") format('woff');
+      }
+
+      /* iconmoon */
+      @font-face {
+        font-family: 'icomoon';
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+        src: url("/assets/fonts/icomoon/icomoon.eot?aoz2mo?v=d450aebd8c");
+        src: url("/assets/fonts/icomoon/icomoon.eot?aoz2mo#iefix?v=d450aebd8c") format('embedded-opentype'),
+        url("/assets/fonts/icomoon/icomoon.ttf?aoz2mo?v=d450aebd8c") format('truetype'),
+        url("/assets/fonts/icomoon/icomoon.woff?aoz2mo?v=d450aebd8c") format('woff'),
+        url("/assets/fonts/icomoon/icomoon.svg?aoz2mo#icomoon?v=d450aebd8c") format('svg');
+      }
+    </style>
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/app.css?v=d450aebd8c" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/prism.css?v=d450aebd8c" media="screen" />
+
+      <link rel="stylesheet" type="text/css" href="/assets/css/post.css?v=d450aebd8c" media="screen" />
+
+
+      <style>
+    .m-hero__picture {
+      background-image: url(https://images.unsplash.com/photo-1587919057555-d728ff5beac3?ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;fm&#x3D;jpg&amp;crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;w&#x3D;2000&amp;fit&#x3D;max&amp;ixid&#x3D;eyJhcHBfaWQiOjExNzczfQ);
+    }
+  
+    @media(max-width: 1000px) {
+      .m-hero__picture {
+        background-image: url(https://images.unsplash.com/photo-1587919057555-d728ff5beac3?ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;fm&#x3D;jpg&amp;crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;w&#x3D;2000&amp;fit&#x3D;max&amp;ixid&#x3D;eyJhcHBfaWQiOjExNzczfQ);
+      }
+    }
+  
+    @media(max-width: 600px) {
+      .m-hero__picture {
+        background-image: url(https://images.unsplash.com/photo-1587919057555-d728ff5beac3?ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;fm&#x3D;jpg&amp;crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;w&#x3D;2000&amp;fit&#x3D;max&amp;ixid&#x3D;eyJhcHBfaWQiOjExNzczfQ);
+      }
+    }
+  </style>
+
+
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="canonical" href="https://trycatch.dev/blog/raspberry-pi-powered-webcam/" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    
+    <meta property="og:site_name" content="trycatch.dev" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Raspberry Pi-powered webcam" />
+    <meta property="og:description" content="With the pandemic continuing to force many people, including myself, to work from home, effective communication tools have become paramount for day-to-day teamwork. Video chat in particular has caused popular models of webcams to be sold out for weeks or months. While I was lucky to get my hands on" />
+    <meta property="og:url" content="https://trycatch.dev/blog/raspberry-pi-powered-webcam/" />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1587919057555-d728ff5beac3?ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;fm&#x3D;jpg&amp;crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;w&#x3D;2000&amp;fit&#x3D;max&amp;ixid&#x3D;eyJhcHBfaWQiOjExNzczfQ" />
+    <meta property="article:published_time" content="2020-08-30T16:51:22.000Z" />
+    <meta property="article:modified_time" content="2020-08-30T16:51:22.000Z" />
+    <meta property="article:tag" content="Python" />
+    <meta property="article:tag" content="Raspberry Pi" />
+    <meta property="article:tag" content="3D Printing" />
+    <meta property="article:tag" content="3D Modeling" />
+    
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Raspberry Pi-powered webcam" />
+    <meta name="twitter:description" content="With the pandemic continuing to force many people, including myself, to work from home, effective communication tools have become paramount for day-to-day teamwork. Video chat in particular has caused popular models of webcams to be sold out for weeks or months. While I was lucky to get my hands on" />
+    <meta name="twitter:url" content="https://trycatch.dev/blog/raspberry-pi-powered-webcam/" />
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1587919057555-d728ff5beac3?ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;fm&#x3D;jpg&amp;crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;w&#x3D;2000&amp;fit&#x3D;max&amp;ixid&#x3D;eyJhcHBfaWQiOjExNzczfQ" />
+    <meta name="twitter:label1" content="Written by" />
+    <meta name="twitter:data1" content="Sasha" />
+    <meta name="twitter:label2" content="Filed under" />
+    <meta name="twitter:data2" content="Python, Raspberry Pi, 3D Printing, 3D Modeling" />
+    <meta name="twitter:site" content="@arktronic" />
+    <meta property="og:image:width" content="2000" />
+    <meta property="og:image:height" content="1125" />
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "trycatch.dev",
+        "url": "https://trycatch.dev/",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://trycatch.dev/content/images/2020/08/trycatch-logo-3-2.png"
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Sasha",
+        "url": "https://trycatch.dev/author/sasha/",
+        "sameAs": []
+    },
+    "headline": "Raspberry Pi-powered webcam",
+    "url": "https://trycatch.dev/blog/raspberry-pi-powered-webcam/",
+    "datePublished": "2020-08-30T16:51:22.000Z",
+    "dateModified": "2020-08-30T16:51:22.000Z",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://images.unsplash.com/photo-1587919057555-d728ff5beac3?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=2000&fit=max&ixid=eyJhcHBfaWQiOjExNzczfQ",
+        "width": 2000,
+        "height": 1125
+    },
+    "keywords": "Python, Raspberry Pi, 3D Printing, 3D Modeling",
+    "description": "With the pandemic continuing to force many people, including myself, to work\nfrom home, effective communication tools have become paramount for day-to-day\nteamwork. Video chat in particular has caused popular models of webcams to be\nsold out for weeks or months. While I was lucky to get my hands on a Logitech\nC922 [https://www.logitech.com/en-us/product/c922-pro-stream-webcam] pretty\nearly on, I wanted to experiment with other potential solutions, especially ones\nthat let me control zoom and foc",
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://trycatch.dev/"
+    }
+}
+    </script>
+
+    <meta name="generator" content="Ghost 4.2" />
+    <link rel="alternate" type="application/rss+xml" title="trycatch.dev" href="https://trycatch.dev/rss.xml" />
+    <script defer src="https://unpkg.com/@tryghost/portal@~1.1.0/umd/portal.min.js" data-ghost="https://trycatch.dev/"></script><style> .gh-post-upgrade-cta-content,
+.gh-post-upgrade-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    text-align: center;
+    width: 100%;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.gh-post-upgrade-cta-content {
+    border-radius: 8px;
+    padding: 40px 4vw;
+}
+
+.gh-post-upgrade-cta h2 {
+    color: #ffffff;
+    font-size: 28px;
+    letter-spacing: -0.2px;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta p {
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta small {
+    font-size: 16px;
+    letter-spacing: -0.2px;
+}
+
+.gh-post-upgrade-cta a {
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a:hover {
+    color: #ffffff;
+    opacity: 0.8;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a.gh-btn {
+    display: block;
+    background: #ffffff;
+    text-decoration: none;
+    margin: 28px 0 0;
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.gh-post-upgrade-cta a.gh-btn:hover {
+    opacity: 0.92;
+}</style>
+    <style>
+    :root {
+    	--primary-subtle-color: #D76708;
+        --link-color: #D76708;
+    }
+    
+    body.home-template .m-hero.with-picture {
+        min-height: 365px;
+    }
+    
+    section.m-hero .m-hero__content a.m-button.filled {
+        display: none;
+    }
+    
+    section.m-subscribe-section {
+        display: none;
+    }
+    
+    [data-theme="light"] {
+        --footer-background-color: #D76708;
+    }
+    
+    [data-theme="dark"] {
+        --secondary-border-color: #222;
+    }
+    
+    .l-post-content pre code {
+        color: inherit;
+        background-color: inherit;
+    }
+    
+    .l-post-content .kg-code-card figcaption {
+        margin-top: -35px;
+    }
+</style>
+<style>:root {--ghost-accent-color: #15171A;}</style>
+
+    <script>
+      // @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt Expat
+      const ghostHost = "https://trycatch.dev"
+      // @license-end
+    </script>
+  </head>
+  <body class="post-template tag-blog tag-python tag-raspberry-pi tag-3d-printing tag-3d-modeling">
+    
+
+
+
+  
+<header class="m-header with-picture js-header">
+  <div class="m-mobile-topbar" data-aos="fade-down">
+    <button class="m-icon-button in-mobile-topbar js-open-menu" aria-label="Open menu">
+      <span class="icon-menu" aria-hidden="true"></span>
+    </button>
+      <a href="https://trycatch.dev" class="m-logo in-mobile-topbar">
+        <img src="https://trycatch.dev/content/images/2020/08/trycatch-logo-3-2.png" alt="trycatch.dev">
+      </a>
+    <button class="m-icon-button in-mobile-topbar js-open-search" aria-label="Open search">
+      <span class="icon-search" aria-hidden="true"></span>
+    </button>
+  </div>
+
+  <div class="m-menu js-menu">
+    <button class="m-icon-button outlined as-close-menu js-close-menu" aria-label="Close menu">
+      <span class="icon-close"></span>
+    </button>
+    <div class="m-menu__main" data-aos="fade-down">
+      <div class="l-wrapper">
+        <div class="m-nav js-main-nav">
+          <nav class="m-nav__left js-main-nav-left" role="navigation" aria-label="Main menu">
+            <ul>
+                <li class="only-desktop">
+                  <a href="https://trycatch.dev" class="m-logo">
+                    <img src="https://trycatch.dev/content/images/2020/08/trycatch-logo-3-2.png" alt="trycatch.dev">
+                  </a>
+                </li>
+                
+    <li class="nav-home">
+      <a href="https://trycatch.dev/">Home</a>
+    </li>
+    <li class="nav-about">
+      <a href="https://trycatch.dev/about/">About</a>
+    </li>
+    <li class="nav-arktronic">
+      <a href="https://twitter.com/arktronic">@Arktronic</a>
+    </li>
+
+              <li class="submenu-option js-submenu-option">
+                <button class="m-icon-button in-menu-main more js-toggle-submenu" aria-label="Open submenu">
+                  <span class="icon-more" aria-hidden="true"></span>
+                </button>
+                <div class="m-submenu js-submenu">
+                  <div class="l-wrapper in-submenu">
+                    <section class="m-recent-articles">
+                      <h3 class="m-submenu-title in-recent-articles">Recent articles</h3>
+                          <div class="glide js-recent-slider">
+                            <div class="glide__track" data-glide-el="track">
+                              <div class="glide__slides">
+                                <div class="glide__slide">
+                                  <a href="/blog/meteorological-meanderings-part-4-creating-interactive-maps/" class="m-recent-article">
+                                    <div class="m-recent-article__picture ">
+                                        <img src="https://images.unsplash.com/photo-1504807959081-3dafd3871909?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MnwxMTc3M3wwfDF8c2VhcmNofDg2fHxtYXB8ZW58MHx8fHwxNjIwMjY5ODIy&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000" loading="lazy" alt="">
+                                    </div>
+                                    <h3 class="m-recent-article__title js-recent-article-title" title="Meteorological meanderings, part 4: creating interactive maps">
+                                      Meteorological meanderings, part 4: creating interactive maps
+                                    </h3>
+                                    <span class="m-recent-article__date">May 11, 2021</span>
+                                  </a>
+                                </div>
+                                <div class="glide__slide">
+                                  <a href="/blog/switching-from-keepass-to-bitwarden-after-14-years/" class="m-recent-article">
+                                    <div class="m-recent-article__picture ">
+                                        <img src="https://images.unsplash.com/photo-1609358905581-e5381612486e?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDN8fGJhbmslMjB2YXVsdHxlbnwwfHx8&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000" loading="lazy" alt="">
+                                    </div>
+                                    <h3 class="m-recent-article__title js-recent-article-title" title="Switching from KeePass to Bitwarden after 14 years">
+                                      Switching from KeePass to Bitwarden after 14 years
+                                    </h3>
+                                    <span class="m-recent-article__date">Mar 5, 2021</span>
+                                  </a>
+                                </div>
+                                <div class="glide__slide">
+                                  <a href="/blog/meteorological-meanderings-part-3-geocoding-and-reverse-geocoding/" class="m-recent-article">
+                                    <div class="m-recent-article__picture ">
+                                        <img src="https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDR8fGdsb2JlfGVufDB8fHw&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000" loading="lazy" alt="">
+                                    </div>
+                                    <h3 class="m-recent-article__title js-recent-article-title" title="Meteorological meanderings, part 3: geocoding and reverse geocoding">
+                                      Meteorological meanderings, part 3: geocoding and reverse geocoding
+                                    </h3>
+                                    <span class="m-recent-article__date">Feb 22, 2021</span>
+                                  </a>
+                                </div>
+                                <div class="glide__slide">
+                                  <a href="/blog/meteorological-meanderings-part-2-visualizations-and-long-range-forecasts/" class="m-recent-article">
+                                    <div class="m-recent-article__picture ">
+                                        <img src="https://images.unsplash.com/photo-1579003593419-98f949b9398f?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDEyfHx3ZWF0aGVyfGVufDB8fHw&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000" loading="lazy" alt="">
+                                    </div>
+                                    <h3 class="m-recent-article__title js-recent-article-title" title="Meteorological meanderings, part 2: visualizations and long-range forecasts">
+                                      Meteorological meanderings, part 2: visualizations and long-range forecasts
+                                    </h3>
+                                    <span class="m-recent-article__date">Feb 1, 2021</span>
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                    </section>
+                    <section class="m-tags">
+                      <h3 class="m-submenu-title">Tags</h3>
+                        <ul>
+                            <li>
+                              <a href="/tag/3d-modeling/">3D Modeling</a>
+                            </li>
+                            <li>
+                              <a href="/tag/3d-printing/">3D Printing</a>
+                            </li>
+                            <li>
+                              <a href="/tag/docker/">Docker</a>
+                            </li>
+                            <li>
+                              <a href="/tag/github-pages/">GitHub Pages</a>
+                            </li>
+                            <li>
+                              <a href="/tag/linux/">Linux</a>
+                            </li>
+                            <li>
+                              <a href="/tag/meta/">Meta</a>
+                            </li>
+                            <li>
+                              <a href="/tag/python/">Python</a>
+                            </li>
+                            <li>
+                              <a href="/tag/raspberry-pi/">Raspberry Pi</a>
+                            </li>
+                            <li>
+                              <a href="/tag/self-hosting/">Self-hosting</a>
+                            </li>
+                        </ul>
+                    </section>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </nav>
+          <div class="m-nav__right">
+            <button class="m-icon-button in-menu-main js-open-search" aria-label="Open search">
+              <span class="icon-search" aria-hidden="true"></span>
+            </button>
+            <div class="m-toggle-darkmode js-tooltip" data-tippy-content="Toggle dark mode" tabindex="0">
+              <label for="toggle-darkmode" class="sr-only">
+                Toggle dark mode
+              </label>
+              <input id="toggle-darkmode" type="checkbox" class="js-toggle-darkmode">
+              <div>
+                <span class="icon-moon moon" aria-hidden="true"></span>
+                <span class="icon-sunny sun" aria-hidden="true"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+
+<main class="main-wrap">
+    
+
+  <section class="m-hero with-picture" data-aos="fade">
+    <div class="m-hero__picture in-post"></div>
+    </section>
+  
+  <article>
+    <div class="l-content in-post">
+        <div class="l-wrapper in-post  js-aos-wrapper" data-aos="fade-up"
+          data-aos-delay="300">
+          <div
+            class="l-post-content  has-subscribe-form js-progress-content">
+            <header class="m-heading">
+              <h1 class="m-heading__title in-post">Raspberry Pi-powered webcam</h1>
+              <div class="m-heading__meta">
+                <span class="m-heading__meta__time">Aug 30, 2020</span>
+              </div>
+            </header>
+            <div class="pos-relative js-post-content">
+              <div class="m-share">
+                <div class="m-share__content js-sticky">
+                  <a href="https://www.facebook.com/sharer/sharer.php?u=https://trycatch.dev/blog/raspberry-pi-powered-webcam/"
+                    class="m-icon-button filled in-share" target="_blank" rel="noopener" aria-label="Facebook">
+                    <span class="icon-facebook" aria-hidden="true"></span>
+                  </a>
+                  <a href="https://twitter.com/intent/tweet?text=Raspberry%20Pi-powered%20webcam&url=https://trycatch.dev/blog/raspberry-pi-powered-webcam/"
+                    class="m-icon-button filled in-share" target="_blank" rel="noopener" aria-label="Twitter">
+                    <span class="icon-twitter" aria-hidden="true"></span>
+                  </a>
+                  <button class="m-icon-button filled in-share progress js-scrolltop" aria-label="Scroll to top">
+                    <span class="icon-arrow-top" aria-hidden="true"></span>
+                    <svg aria-hidden="true">
+                      <circle class="progress-ring__circle js-progress" fill="transparent" r="0" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <p>With the pandemic continuing to force many people, including myself, to work from home, effective communication tools have become paramount for day-to-day teamwork. Video chat in particular has caused popular models of webcams to be sold out for weeks or months. While I was lucky to get my hands on a <a href="https://www.logitech.com/en-us/product/c922-pro-stream-webcam">Logitech C922</a> pretty early on, I wanted to experiment with other potential solutions, especially ones that let me control zoom and focus more precisely.</p><figure class="kg-card kg-image-card kg-card-hascaption"><img src="https://trycatch.dev/content/images/2020/08/image.png" class="kg-image" alt="Raspberry Pi HQ Camera module" loading="lazy" width="600" height="400" srcset="https://trycatch.dev/content/images/2020/08/image.png 600w"><figcaption>Image courtesy of the Raspberry Pi Foundation</figcaption></figure><p>This led me to the <a href="https://www.raspberrypi.org/products/raspberry-pi-high-quality-camera/">Raspberry Pi High Quality Camera</a>. It's a camera module, similar to the other Pi cameras that have been available for years now, but with a 12.3MP Sony sensor and support for C- and CS-mount compatible lenses. It also features a standard 1/4"-20 UNC tripod mount.</p><h2 id="hardware-and-software">Hardware and software</h2><p>I've got quite a few Raspberry Pi computers laying around, from the very first release (with a rather fragile full-size SD card slot) to the latest Raspberry Pi 4 varieties, so finding one to use wasn't an issue for me. I purchased an HQ Camera module and a few random C- and CS-mount lenses. Unfortunately, the fixed focal length prime lenses that I initially got didn't work well for me, as their optimal distance was outside of my setup. I eventually bought a <a href="https://www.ebay.com/itm/2-8mm-12mm-Manual-Zoom-Manual-Focal-CS-Mount-Lens-for-CCTV-Cameras/272293277356">zoom lens</a> with manual focus, which has done its job pretty well so far.</p><p>Next, I had to figure out a good way to get the camera stream into my desktop computer. The <code><a href="https://www.raspberrypi.org/documentation/usage/camera/raspicam/raspivid.md">raspivid</a></code> application that comes with Raspberry Pi OS has the ability to stream video data over a network directly or via a pipe to another app. My first attempt involved using <code>netcat</code> to stream to my Windows PC, receiving the stream with <code><a href="https://nmap.org/ncat/">ncat</a></code>, and piping the data into MPlayer. It mostly worked, but the stream was laggy and had occasional hiccups, although those were probably caused by the Pi's wireless connection. This didn't seem like a good solution. Even if a more stable network connection solved both the latency and hiccup issues, there was still the problem of getting MPlayer (or something else) to act as a webcam. The closest I came to getting that to work was using <a href="https://obsproject.com/">OBS</a> to capture the MPlayer window and export that stream as a <a href="https://obsproject.com/forum/resources/obs-virtualcam.949/">virtual webcam</a>, but this was rapidly becoming an extremely hacky solution. There had to be a better alternative.</p><figure class="kg-card kg-image-card kg-card-hascaption"><img src="https://trycatch.dev/content/images/2020/08/image-1.png" class="kg-image" alt="USB 3.0 &quot;Game Capture Card&quot;" loading="lazy" width="1600" height="1600" srcset="https://trycatch.dev/content/images/size/w600/2020/08/image-1.png 600w, https://trycatch.dev/content/images/size/w1000/2020/08/image-1.png 1000w, https://trycatch.dev/content/images/2020/08/image-1.png 1600w" sizes="(min-width: 720px) 720px"><figcaption>A capture card on <a href="https://www.ebay.com/itm/122827929117">eBay</a></figcaption></figure><p>Enter: USB capture cards! An entire industry has sprung up around video game live streaming, play-throughs, speedruns, and similar forms of entertainment showing gameplay. Capture cards are used to perform the actual capturing and relaying of video and audio data from game consoles, as well as other sources, to PCs for streaming or recording. <em>(The term "capture card" is a little misleading today. Historically referring to peripherals connected to motherboard expansion slots, its definition has now grown to include external USB peripherals as well.)</em></p><p>The specific capture card that I purchased happens to be widely available under various names on <a href="https://www.ebay.com/itm/122827929117">eBay</a> and <a href="https://smile.amazon.com/dp/B08CMXLN88">Amazon</a>. This particular model's feature listing is a little misleading, as it suggests that the device can record 4K streams. Well, it can <em>capture</em> 4K streams, and it can pass them through to the output HDMI port, but it can only output a maximum resolution of 1080p over USB. Still, that's pretty good functionality for the price, and I don't need 4K for what I'm doing anyway. As you might have guessed, I'm connecting the Raspberry Pi to the capture card and using that as a webcam. In fact, with this model anyway, the setup was a lot simpler than I anticipated. Instead of showing up in Device Manager as a custom USB peripheral requiring weird third-party drivers, it appears as a webcam! The only thing left to do is configure the Raspberry Pi to output the camera's video stream to the main screen.</p><p>I chose a simple Pi configuration, at least for now. I might write something more advanced that allows live tweaking of camera settings later on, but at the moment, built-in applications are sufficient. I used Raspberry Pi OS Lite for speed. Since the camera preview can be rendered directly onto the Linux framebuffer, there was no need to install a GUI at all. A simple script was used to launch the app:</p><figure class="kg-card kg-code-card"><pre><code class="language-shell">#!/bin/bash
+TERM=xterm clear &gt; /dev/tty1
+raspivid -t 0 -drc med -sa 25</code></pre><figcaption>/root/service-script.sh</figcaption></figure><p>The first command, after the <a href="https://en.wikipedia.org/wiki/Shebang_(Unix)">shebang line</a>, clears the main screen's terminal, which may still have output from the boot sequence. The second line then launches <code>raspivid</code>, which shows the video preview.</p><p>To get this script to run at startup, I wrote a basic systemd service:</p><figure class="kg-card kg-code-card"><pre><code class="language-ini">[Unit]
+Description=Pi Camera Service
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /root/service-script.sh
+
+[Install]
+WantedBy=multi-user.target</code></pre><figcaption>/root/camera.service</figcaption></figure><p>To install the systemd service, I did the following:</p><figure class="kg-card kg-code-card"><pre><code class="language-shell">ln -s /root/camera.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable camera</code></pre><figcaption>Execute these commands as root</figcaption></figure><p>The <code>enable</code> command makes the service run automatically at startup. To launch it immediately, execute <code>systemctl start camera</code>.</p><p>Finally, a couple of tweaks had to be done to the boot config and kernel command-line files:</p><figure class="kg-card kg-code-card"><pre><code class="language-ini">hdmi_group=1
+hdmi_mode=16</code></pre><figcaption>Excerpt from /boot/config.txt</figcaption></figure><figure class="kg-card kg-code-card"><pre><code class="language-none">console=serial0,115200 console=tty3 root=PARTUUID=b48c1aa6-02 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait logo.nologo vt.global_cursor_default=0</code></pre><figcaption>/boot/cmdline.txt</figcaption></figure><p>The <code>config.txt</code> file was modified to force 1080p, and the <code>cmdline.txt</code> file was modified to hide additional text output, the Pi logos, and the blinking cursor.</p><h2 id="mounting">Mounting</h2><p>To get everything situated on my monitor, I decided to design and 3D print my own mount:</p><figure class="kg-card kg-code-card"><pre><code class="language-clike">// large vertical piece with thread
+difference() {
+linear_extrude(height = 74)
+            square([80, 4]);
+
+translate([40, -3, 4])
+    rotate([270, 0, 0])
+        english_thread (diameter=1/4, threads_per_inch=20, length=1, internal=true);
+
+rpi_holes(5, 14);
+}
+
+// rear horizontal piece with thread
+difference() {
+translate([0, 0, 70])
+    linear_extrude(height = 4)
+        square([80, 60]);
+
+translate([40, 38, 60])
+    english_thread (diameter=1/4, threads_per_inch=20, length=1, internal=true);
+}
+
+// front horizontal piece
+translate([0, -35, 70])
+    linear_extrude(height = 4)
+        square([80, 35]);
+
+// front overhang piece
+translate([0, -35, 64])
+    linear_extrude(height = 10)
+        square([80, 3]);
+
+
+
+module hole(x, y) {
+    color("red")
+        rotate([90, 0, 0])
+            translate([x, y, 0])
+                cylinder(d=2.7, h=15, $fn=100, center=true);
+}
+
+// WARNING: these may be inaccurate!
+module rpi_holes(x, y) {
+    hole(x, y);
+    hole(x + 58, y);
+    hole(x, y + 49);
+    hole(x + 58, y + 49);
+}</code></pre><figcaption>OpenSCAD code for the mount</figcaption></figure><figure class="kg-card kg-image-card kg-card-hascaption"><img src="https://trycatch.dev/content/images/2020/08/image-2.png" class="kg-image" alt="OpenSCAD rendering of the mount" loading="lazy" width="945" height="842" srcset="https://trycatch.dev/content/images/size/w600/2020/08/image-2.png 600w, https://trycatch.dev/content/images/2020/08/image-2.png 945w" sizes="(min-width: 720px) 720px"><figcaption>OpenSCAD was used to design the mount</figcaption></figure><p>I used <a href="https://www.openscad.org/">OpenSCAD</a> to model the mount and then export the model as a 3MF file for slicing with Simplify3D. The <code>english_thread</code> function came from <a href="https://www.dkprojects.net/openscad-threads/">Dan Kirshner</a>. In addition to the tripod mount holes, I also printed the nuts and bolts to go along with them. Creating the bolt was straightforward:</p><figure class="kg-card kg-code-card"><pre><code class="language-clike">cylinder(r=8, h=6, $fn=6);
+english_thread (diameter=1/4, threads_per_inch=20, length=1.5);</code></pre><figcaption>OpenSCAD code for a 1/4"-20 bolt</figcaption></figure><figure class="kg-card kg-image-card"><img src="https://trycatch.dev/content/images/2020/08/image-5.png" class="kg-image" alt="OpenSCAD rendering of a 1/4&quot;-20 bolt" loading="lazy" width="275" height="622"></figure><p>Creating a nut was also pretty clear:</p><figure class="kg-card kg-code-card"><pre><code class="language-clike">difference()
+{
+    cylinder(r=8, h=6, $fn=6);
+    translate([0, 0, -0.1])
+        english_thread (diameter=1/4, threads_per_inch=20, length=0.5, internal=true);
+}</code></pre><figcaption>OpenSCAD code for a 1/4"-20 nut</figcaption></figure><figure class="kg-card kg-image-card"><img src="https://trycatch.dev/content/images/2020/08/image-4.png" class="kg-image" alt="OpenSCAD rendering of a 1/4&quot;-20 nut" loading="lazy" width="583" height="556"></figure><p>This didn't <em>exactly</em> turn out as I imagined, but it got the job done:</p><figure class="kg-card kg-image-card kg-card-hascaption"><img src="https://trycatch.dev/content/images/2020/08/image-3.png" class="kg-image" alt="HQ camera module mounted on top of a monitor alongside a Raspberry Pi mounted next to it" loading="lazy" width="2000" height="1482" srcset="https://trycatch.dev/content/images/size/w600/2020/08/image-3.png 600w, https://trycatch.dev/content/images/size/w1000/2020/08/image-3.png 1000w, https://trycatch.dev/content/images/size/w1600/2020/08/image-3.png 1600w, https://trycatch.dev/content/images/size/w2400/2020/08/image-3.png 2400w" sizes="(min-width: 720px) 720px"><figcaption>Two mounts in use</figcaption></figure><p>The 1/4"-20 threading on the mount and on the printed nuts and bolts worked surprisingly well for both mounting the HQ camera (the top bolt) and for changing the camera's pitch (the bottom bolt). Since everything is made of PLA, there is no concern of damaging the monitor or the camera module, and the plastic is just malleable enough that I was able to use an existing tripod with metal threading as a makeshift thread chaser to ensure the printed threading was correct.</p><p>Due to the structure of my monitor, I was unable to use a single mount for both the camera and the Raspberry Pi: the HDMI connection location made that impossible — see the awkward angle of the Pi in the above photo. Also, I realized that I had no M2.5 screws, so I just used some twist ties to secure the Raspberry Pi to the second mount. That had the nice side effect of letting me avoid dealing with a potentially inaccurate calculation for the locations of the Raspberry Pi mount holes. <em>(The <a href="https://www.raspberrypi.org/documentation/hardware/raspberrypi/mechanical/rpi_MECH_4b_4p0.pdf">mechanical drawing</a> clearly indicates the distances between the centers of the mount holes, which is the information I used, but, after printing, the holes appear to be just slightly misaligned. I'm uncertain as to the cause.)</em></p><p>Overall, this was a fun project! Between designing and printing my own monitor mount and learning something about camera lenses (I still have a lot to learn in that area), I've got new experiences and useful knowledge for future projects. If you have any questions or suggestions, <a href="https://twitter.com/arktronic">hit me up on Twitter</a>.</p><h2 id="p-s-possible-future-enhancements">P.S.: Possible future enhancements</h2><p>A few things I might do later on to make all of this work better:</p><ul><li>Replace the shell script for launching <code>raspivid</code> with a Python script utilizing the <code><a href="https://picamera.readthedocs.io/">picamera</a></code> package, so that I can adjust camera parameters in real time, possibly via a simple web interface</li><li>Fix the mounting holes in an updated design and use a single mount once my new monitors arrive (their design does not have the protrusion seen in the above photo)</li><li>Connect my microphone to the Raspberry Pi so that audio and video would both come from the same source</li></ul>
+                <section class="m-tags in-post">
+                  <h3 class="m-submenu-title">Tags</h3>
+                  <ul>
+                      <li>
+                        <a href="/tag/python/" title="Python">Python</a>
+                      </li>
+                      <li>
+                        <a href="/tag/raspberry-pi/" title="Raspberry Pi">Raspberry Pi</a>
+                      </li>
+                      <li>
+                        <a href="/tag/3d-printing/" title="3D Printing">3D Printing</a>
+                      </li>
+                      <li>
+                        <a href="/tag/3d-modeling/" title="3D Modeling">3D Modeling</a>
+                      </li>
+                  </ul>
+                </section>
+            </div>
+          </div>
+        </div>
+          <section class="m-subscribe-section">
+            <div class="l-wrapper in-post">
+              <div class="m-subscribe-section__content">
+                <div class="m-subscribe-section__text">
+                  <h4 class="m-subscribe-section__title">Subscribe to our newsletter</h4>
+                  <p class="m-subscribe-section__description">
+                    Get the latest posts delivered right to your inbox.
+                  </p>
+                </div>
+                <div class="m-subscribe-section__form">
+                  
+<div class="m-subscribe-section__form">
+  <form data-members-form="subscribe" id="newsletter-form" class="m-subscribe-section__container">
+    <div class="m-subscribe__form">
+      <div class="pos-relative">
+        <label for="newsletter-input" class="sr-only">Your email address</label>
+        <input data-members-email id="newsletter-input" class="m-input in-subscribe-section" type="email"
+          placeholder="Your email address" required />
+      </div>
+      <button id="newsletter-button" class="m-button primary block" type="submit">Subscribe</button>
+    </div>
+    <div class="m-subscribe__success">
+      <header class="m-heading no-margin">
+        <img src="/assets/images/success.png?v=d450aebd8c" alt="Success!" class="m-subscribe__success_icon">
+        <p class="m-heading__description in-newsletter-form">
+          Now check your inbox and click the link to confirm your subscription.
+        </p>
+      </header>
+    </div>
+    <p class="m-subscribe__invalid m-small-text">
+      Please enter a valid email address
+    </p>
+    <p class="m-subscribe__error m-small-text">
+      Oops! There was an error sending the email, please try later.
+    </p>
+  </form>
+</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        <section class="m-recommended">
+          <div class="l-wrapper in-recommended">
+            <h3 class="m-section-title in-recommended">Recommended for you</h3>
+            <div class="m-recommended-articles">
+              <div class="m-recommended-slider glide js-recommended-slider">
+                <div class="glide__track" data-glide-el="track">
+                  <div class="glide__slides">
+                    
+    <div class="m-recommended-slider__item glide__slide">
+  <article class="m-article-card  post tag-blog tag-docker tag-linux tag-self-hosting">
+    <div class="m-article-card__picture">
+      <a href="/blog/self-hosting-a-streaming-video-platform/" class="m-article-card__picture-link" aria-hidden="true" tabindex="-1"></a>
+        <img class="m-article-card__picture-background" src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;fm&#x3D;jpg&amp;crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;w&#x3D;2000&amp;fit&#x3D;max&amp;ixid&#x3D;eyJhcHBfaWQiOjExNzczfQ" loading="lazy" alt="">
+    </div>
+      <div class="m-article-card__info no-tag">
+      <a href="/blog/self-hosting-a-streaming-video-platform/" class="m-article-card__info-link" aria-label="Self-hosting a streaming video platform">
+        <div>
+          <h2 class="m-article-card__title js-article-card-title " title="Self-hosting a streaming video platform">
+            Self-hosting a streaming video platform
+          </h2>
+        </div>
+        <div class="m-article-card__timestamp">
+          <span>Sep 12, 2020</span>
+          <span>&bull;</span>
+          <span>7 min read</span>
+        </div>
+      </a>
+    </div>
+  </article>
+    </div>
+    <div class="m-recommended-slider__item glide__slide">
+  <article class="m-article-card  post tag-blog tag-docker tag-linux tag-self-hosting">
+    <div class="m-article-card__picture">
+      <a href="/blog/self-hosting-a-video-chat-system/" class="m-article-card__picture-link" aria-hidden="true" tabindex="-1"></a>
+        <img class="m-article-card__picture-background" src="https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;fm&#x3D;jpg&amp;crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;w&#x3D;2000&amp;fit&#x3D;max&amp;ixid&#x3D;eyJhcHBfaWQiOjExNzczfQ" loading="lazy" alt="">
+    </div>
+      <div class="m-article-card__info no-tag">
+      <a href="/blog/self-hosting-a-video-chat-system/" class="m-article-card__info-link" aria-label="Self-hosting a video chat system">
+        <div>
+          <h2 class="m-article-card__title js-article-card-title " title="Self-hosting a video chat system">
+            Self-hosting a video chat system
+          </h2>
+        </div>
+        <div class="m-article-card__timestamp">
+          <span>Sep 10, 2020</span>
+          <span>&bull;</span>
+          <span>4 min read</span>
+        </div>
+      </a>
+    </div>
+  </article>
+    </div>
+    <div class="m-recommended-slider__item glide__slide">
+  <article class="m-article-card  post tag-blog tag-meta tag-python tag-github-pages">
+    <div class="m-article-card__picture">
+      <a href="/blog/boo-a-static-ghost/" class="m-article-card__picture-link" aria-hidden="true" tabindex="-1"></a>
+        <img class="m-article-card__picture-background" src="https://images.unsplash.com/photo-1476283721796-dd935b062838?ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;fm&#x3D;jpg&amp;crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;w&#x3D;2000&amp;fit&#x3D;max&amp;ixid&#x3D;eyJhcHBfaWQiOjExNzczfQ" loading="lazy" alt="">
+    </div>
+      <div class="m-article-card__info no-tag">
+      <a href="/blog/boo-a-static-ghost/" class="m-article-card__info-link" aria-label="Boo! A static Ghost!">
+        <div>
+          <h2 class="m-article-card__title js-article-card-title " title="Boo! A static Ghost!">
+            Boo! A static Ghost!
+          </h2>
+        </div>
+        <div class="m-article-card__timestamp">
+          <span>Aug 28, 2020</span>
+          <span>&bull;</span>
+          <span>5 min read</span>
+        </div>
+      </a>
+    </div>
+  </article>
+    </div>
+                  </div>
+                </div>
+                <div data-glide-el="controls" class="glide__arrows js-controls">
+                  <button data-glide-dir="<" class="m-icon-button filled in-recommended-articles glide-prev" aria-label="Previous">
+                    <span class="icon-arrow-left" aria-hidden="true"></span>
+                  </button>
+                  <button data-glide-dir=">" class="m-icon-button filled in-recommended-articles glide-next" aria-label="Next">
+                    <span class="icon-arrow-right" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+    </div>
+  </article>
+</main>
+
+
+
+    
+<div class="m-search js-search" role="dialog" aria-modal="true" aria-label="Search">
+  <button class="m-icon-button outlined as-close-search js-close-search" aria-label="Close search">
+    <span class="icon-close" aria-hidden="true"></span>
+  </button>
+  <div class="m-search__content">
+    <form class="m-search__form">
+      <div class="pos-relative">
+        <span class="icon-search m-search-icon" aria-hidden="true"></span>
+        <label for="search-input" class="sr-only">
+          Type to search
+        </label>
+        <input id="search-input" type="text" class="m-input in-search js-input-search" placeholder="Type to search">
+      </div>
+    </form>
+    <div class="js-search-results hide"></div>
+    <p class="m-not-found align-center hide js-no-results">
+      No results for your search, please try with something else.
+    </p>
+  </div>
+</div>
+
+    
+<footer class="m-footer">
+  <div class="m-footer__content">
+    <p class="m-footer-copyright">
+      <span>trycatch.dev &copy; 2021</span>
+    </p>
+
+    <nav class="m-footer-social">
+        <a href="https://twitter.com/arktronic" target="_blank" rel="noopener" aria-label="Twitter">
+          <span class="icon-twitter" aria-hidden="true"></span>
+        </a>
+      <a href="https://trycatch.dev/rss.xml" aria-label="RSS">
+        <span class="icon-rss" aria-hidden="true"></span>
+      </a>
+    </nav>
+    <p class="m-footer-copyright jslicense">
+      <a href="/assets/html/javascript.html?v=d450aebd8c" rel="jslicense">JavaScript license information</a>
+    </p>
+  </div>
+</footer>
+
+    <div class="m-alert success subscribe js-alert" data-notification="subscribe">
+  Great! You&#x27;ve successfully subscribed.
+  <button class="m-alert__close js-notification-close" aria-label="Close">
+    <span class="icon-close"></span>
+  </button>
+</div>
+
+<div class="m-alert success signup js-alert" data-notification="signup">
+  Great! Next, complete checkout for full access.
+  <button class="m-alert__close js-notification-close" aria-label="Close">
+    <span class="icon-close"></span>
+  </button>
+</div>
+
+<div class="m-alert success signin js-alert" data-notification="signin">
+  Welcome back! You&#x27;ve successfully signed in.
+  <button class="m-alert__close js-notification-close" aria-label="Close">
+    <span class="icon-close"></span>
+  </button>
+</div>
+
+<div class="m-alert success checkout js-alert" data-notification="checkout">
+  Success! Your account is fully activated, you now have access to all content.
+  <button class="m-alert__close js-notification-close" aria-label="Close">
+    <span class="icon-close"></span>
+  </button>
+</div>
+    <script crossorigin="anonymous" src="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver%2CPromise%2CArray.prototype.includes%2CString.prototype.endsWith%2CString.prototype.startsWith%2CObject.assign%2CNodeList.prototype.forEach"></script>
+    <script defer src="/assets/js/manifest.js?v=d450aebd8c"></script>
+    <script defer src="/assets/js/vendor/content-api.min.js?v=d450aebd8c"></script>
+    <script defer src="/assets/js/vendor.js?v=d450aebd8c"></script>
+    <script defer src="/assets/js/app.js?v=d450aebd8c"></script>
+    <script defer src="/assets/js/prism.js?v=d450aebd8c"></script>
+
+      <script defer src="/assets/js/post.js?v=d450aebd8c"></script>
+
+
+    <script type="text/javascript">
+    document.body.classList.add('line-numbers');
+    document.querySelectorAll('a.in-share').forEach(a => {
+        a.classList.add('js-tooltip');
+        a.dataset.tippyContent = 'Share';
+    });
+</script>
+<script type="text/javascript">
+    if (document.location.hostname == 'trycatch.dev') {
+        window.goatcounter = {
+            endpoint: 'https://count-trycatch.arktronic.com/count',
+        }
+        var s = document.createElement('script');
+        s.type = 'text/javascript';
+        s.src = '//count-trycatch.arktronic.com/count.js';
+        document.getElementsByTagName('head')[0].appendChild(s);
+	}
+</script>
+  </body>
+</html>

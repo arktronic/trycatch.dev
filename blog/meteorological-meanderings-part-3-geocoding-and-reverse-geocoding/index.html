@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>Meteorological meanderings, part 3: geocoding and reverse geocoding</title>
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="preload" href="/assets/css/app.css?v=d450aebd8c" as="style" />
+    <link rel="preload" href="/assets/css/prism.css?v=d450aebd8c" as="style" />
+    <link rel="preload" href="/assets/js/manifest.js?v=d450aebd8c" as="script" />
+    <link rel="preload" href="/assets/js/vendor/content-api.min.js?v=d450aebd8c" as="script" />
+    <link rel="preload" href="/assets/js/vendor.js?v=d450aebd8c" as="script" />
+    <link rel="preload" href="/assets/js/app.js?v=d450aebd8c" as="script" />
+    <link rel="preload" href="/assets/js/prism.js?v=d450aebd8c" as="script" />
+    <link rel="preconnect" href="https://polyfill.io">
+    <link rel="dns-prefetch" href="https://polyfill.io">
+
+      <link rel="preload" href="/assets/css/post.css?v=d450aebd8c" as="style" />
+  <link rel="preload" href="/assets/js/post.js?v=d450aebd8c" as="script" />
+
+
+    <style>
+      /* These font-faces are here to make fonts work if the Ghost instance is installed in a subdirectory */
+
+      /* source-sans-pro-regular */
+      @font-face {
+        font-family: 'Source Sans Pro';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: local('Source Sans Pro Regular'), local('SourceSansPro-Regular'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-regular.woff2?v=d450aebd8c") format('woff2'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-regular.woff?v=d450aebd8c") format('woff');
+      }
+
+      /* source-sans-pro-600 */
+      @font-face {
+        font-family: 'Source Sans Pro';
+        font-style: normal;
+        font-weight: 600;
+        font-display: swap;
+        src: local('Source Sans Pro SemiBold'), local('SourceSansPro-SemiBold'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-600.woff2?v=d450aebd8c") format('woff2'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-600.woff?v=d450aebd8c") format('woff');
+      }
+
+      /* source-sans-pro-700 */
+      @font-face {
+        font-family: 'Source Sans Pro';
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-700.woff2?v=d450aebd8c") format('woff2'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-700.woff?v=d450aebd8c") format('woff');
+      }
+
+      /* iconmoon */
+      @font-face {
+        font-family: 'icomoon';
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+        src: url("/assets/fonts/icomoon/icomoon.eot?aoz2mo?v=d450aebd8c");
+        src: url("/assets/fonts/icomoon/icomoon.eot?aoz2mo#iefix?v=d450aebd8c") format('embedded-opentype'),
+        url("/assets/fonts/icomoon/icomoon.ttf?aoz2mo?v=d450aebd8c") format('truetype'),
+        url("/assets/fonts/icomoon/icomoon.woff?aoz2mo?v=d450aebd8c") format('woff'),
+        url("/assets/fonts/icomoon/icomoon.svg?aoz2mo#icomoon?v=d450aebd8c") format('svg');
+      }
+    </style>
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/app.css?v=d450aebd8c" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/prism.css?v=d450aebd8c" media="screen" />
+
+      <link rel="stylesheet" type="text/css" href="/assets/css/post.css?v=d450aebd8c" media="screen" />
+
+
+      <style>
+    .m-hero__picture {
+      background-image: url(https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDR8fGdsb2JlfGVufDB8fHw&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000);
+    }
+  
+    @media(max-width: 1000px) {
+      .m-hero__picture {
+        background-image: url(https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDR8fGdsb2JlfGVufDB8fHw&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000);
+      }
+    }
+  
+    @media(max-width: 600px) {
+      .m-hero__picture {
+        background-image: url(https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDR8fGdsb2JlfGVufDB8fHw&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000);
+      }
+    }
+  </style>
+
+
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="canonical" href="https://trycatch.dev/blog/meteorological-meanderings-part-3-geocoding-and-reverse-geocoding/" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    
+    <meta property="og:site_name" content="trycatch.dev" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Meteorological meanderings, part 3: geocoding and reverse geocoding" />
+    <meta property="og:description" content="Strictly speaking, this isn&#x27;t meteorology. However, in order to display meteorological data for user-requested locations, we must be able to translate our users&#x27; requests into coordinates. If a user searches for the name of a city, we need to be able to get a set of coordinates for that city," />
+    <meta property="og:url" content="https://trycatch.dev/blog/meteorological-meanderings-part-3-geocoding-and-reverse-geocoding/" />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDR8fGdsb2JlfGVufDB8fHw&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000" />
+    <meta property="article:published_time" content="2021-02-23T00:58:32.000Z" />
+    <meta property="article:modified_time" content="2021-02-23T00:58:32.000Z" />
+    <meta property="article:tag" content="Weather" />
+    
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Meteorological meanderings, part 3: geocoding and reverse geocoding" />
+    <meta name="twitter:description" content="Strictly speaking, this isn&#x27;t meteorology. However, in order to display meteorological data for user-requested locations, we must be able to translate our users&#x27; requests into coordinates. If a user searches for the name of a city, we need to be able to get a set of coordinates for that city," />
+    <meta name="twitter:url" content="https://trycatch.dev/blog/meteorological-meanderings-part-3-geocoding-and-reverse-geocoding/" />
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDR8fGdsb2JlfGVufDB8fHw&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000" />
+    <meta name="twitter:label1" content="Written by" />
+    <meta name="twitter:data1" content="Sasha" />
+    <meta name="twitter:label2" content="Filed under" />
+    <meta name="twitter:data2" content="Weather" />
+    <meta name="twitter:site" content="@arktronic" />
+    <meta property="og:image:width" content="2000" />
+    <meta property="og:image:height" content="2000" />
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "trycatch.dev",
+        "url": "https://trycatch.dev/",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://trycatch.dev/content/images/2020/08/trycatch-logo-3-2.png"
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Sasha",
+        "url": "https://trycatch.dev/author/sasha/",
+        "sameAs": []
+    },
+    "headline": "Meteorological meanderings, part 3: geocoding and reverse geocoding",
+    "url": "https://trycatch.dev/blog/meteorological-meanderings-part-3-geocoding-and-reverse-geocoding/",
+    "datePublished": "2021-02-23T00:58:32.000Z",
+    "dateModified": "2021-02-23T00:58:32.000Z",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MXwxMTc3M3wwfDF8c2VhcmNofDR8fGdsb2JlfGVufDB8fHw&ixlib=rb-1.2.1&q=80&w=2000",
+        "width": 2000,
+        "height": 2000
+    },
+    "keywords": "Weather",
+    "description": "Strictly speaking, this isn&#x27;t meteorology. However, in order to display\nmeteorological data for user-requested locations, we must be able to translate\nour users&#x27; requests into coordinates.\n\nIf a user searches for the name of a city, we need to be able to get a set of\ncoordinates for that city, since our weather information is all based on\ncoordinates. The process for doing such a search is called geocoding.\nConversely, if we happen to have an interactive map and we let the user click on\nany poin",
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://trycatch.dev/"
+    }
+}
+    </script>
+
+    <meta name="generator" content="Ghost 4.2" />
+    <link rel="alternate" type="application/rss+xml" title="trycatch.dev" href="https://trycatch.dev/rss.xml" />
+    <script defer src="https://unpkg.com/@tryghost/portal@~1.1.0/umd/portal.min.js" data-ghost="https://trycatch.dev/"></script><style> .gh-post-upgrade-cta-content,
+.gh-post-upgrade-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    text-align: center;
+    width: 100%;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.gh-post-upgrade-cta-content {
+    border-radius: 8px;
+    padding: 40px 4vw;
+}
+
+.gh-post-upgrade-cta h2 {
+    color: #ffffff;
+    font-size: 28px;
+    letter-spacing: -0.2px;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta p {
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta small {
+    font-size: 16px;
+    letter-spacing: -0.2px;
+}
+
+.gh-post-upgrade-cta a {
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a:hover {
+    color: #ffffff;
+    opacity: 0.8;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a.gh-btn {
+    display: block;
+    background: #ffffff;
+    text-decoration: none;
+    margin: 28px 0 0;
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.gh-post-upgrade-cta a.gh-btn:hover {
+    opacity: 0.92;
+}</style>
+    <style>
+    :root {
+    	--primary-subtle-color: #D76708;
+        --link-color: #D76708;
+    }
+    
+    body.home-template .m-hero.with-picture {
+        min-height: 365px;
+    }
+    
+    section.m-hero .m-hero__content a.m-button.filled {
+        display: none;
+    }
+    
+    section.m-subscribe-section {
+        display: none;
+    }
+    
+    [data-theme="light"] {
+        --footer-background-color: #D76708;
+    }
+    
+    [data-theme="dark"] {
+        --secondary-border-color: #222;
+    }
+    
+    .l-post-content pre code {
+        color: inherit;
+        background-color: inherit;
+    }
+    
+    .l-post-content .kg-code-card figcaption {
+        margin-top: -35px;
+    }
+</style>
+<style>:root {--ghost-accent-color: #15171A;}</style>
+
+    <script>
+      // @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt Expat
+      const ghostHost = "https://trycatch.dev"
+      // @license-end
+    </script>
+  </head>
+  <body class="post-template tag-blog tag-weather">
+    
+
+
+
+  
+<header class="m-header with-picture js-header">
+  <div class="m-mobile-topbar" data-aos="fade-down">
+    <button class="m-icon-button in-mobile-topbar js-open-menu" aria-label="Open menu">
+      <span class="icon-menu" aria-hidden="true"></span>
+    </button>
+      <a href="https://trycatch.dev" class="m-logo in-mobile-topbar">
+        <img src="https://trycatch.dev/content/images/2020/08/trycatch-logo-3-2.png" alt="trycatch.dev">
+      </a>
+    <button class="m-icon-button in-mobile-topbar js-open-search" aria-label="Open search">
+      <span class="icon-search" aria-hidden="true"></span>
+    </button>
+  </div>
+
+  <div class="m-menu js-menu">
+    <button class="m-icon-button outlined as-close-menu js-close-menu" aria-label="Close menu">
+      <span class="icon-close"></span>
+    </button>
+    <div class="m-menu__main" data-aos="fade-down">
+      <div class="l-wrapper">
+        <div class="m-nav js-main-nav">
+          <nav class="m-nav__left js-main-nav-left" role="navigation" aria-label="Main menu">
+            <ul>
+                <li class="only-desktop">
+                  <a href="https://trycatch.dev" class="m-logo">
+                    <img src="https://trycatch.dev/content/images/2020/08/trycatch-logo-3-2.png" alt="trycatch.dev">
+                  </a>
+                </li>
+                
+    <li class="nav-home">
+      <a href="https://trycatch.dev/">Home</a>
+    </li>
+    <li class="nav-about">
+      <a href="https://trycatch.dev/about/">About</a>
+    </li>
+    <li class="nav-arktronic">
+      <a href="https://twitter.com/arktronic">@Arktronic</a>
+    </li>
+
+              <li class="submenu-option js-submenu-option">
+                <button class="m-icon-button in-menu-main more js-toggle-submenu" aria-label="Open submenu">
+                  <span class="icon-more" aria-hidden="true"></span>
+                </button>
+                <div class="m-submenu js-submenu">
+                  <div class="l-wrapper in-submenu">
+                    <section class="m-recent-articles">
+                      <h3 class="m-submenu-title in-recent-articles">Recent articles</h3>
+                          <div class="glide js-recent-slider">
+                            <div class="glide__track" data-glide-el="track">
+                              <div class="glide__slides">
+                                <div class="glide__slide">
+                                  <a href="/blog/meteorological-meanderings-part-4-creating-interactive-maps/" class="m-recent-article">
+                                    <div class="m-recent-article__picture ">
+                                        <img src="https://images.unsplash.com/photo-1504807959081-3dafd3871909?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MnwxMTc3M3wwfDF8c2VhcmNofDg2fHxtYXB8ZW58MHx8fHwxNjIwMjY5ODIy&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000" loading="lazy" alt="">
+                                    </div>
+                                    <h3 class="m-recent-article__title js-recent-article-title" title="Meteorological meanderings, part 4: creating interactive maps">
+                                      Meteorological meanderings, part 4: creating interactive maps
+                                    </h3>
+                                    <span class="m-recent-article__date">May 11, 2021</span>
+                                  </a>
+                                </div>
+                                <div class="glide__slide">
+                                  <a href="/blog/switching-from-keepass-to-bitwarden-after-14-years/" class="m-recent-article">
+                                    <div class="m-recent-article__picture ">
+                                        <img src="https://images.unsplash.com/photo-1609358905581-e5381612486e?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDN8fGJhbmslMjB2YXVsdHxlbnwwfHx8&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000" loading="lazy" alt="">
+                                    </div>
+                                    <h3 class="m-recent-article__title js-recent-article-title" title="Switching from KeePass to Bitwarden after 14 years">
+                                      Switching from KeePass to Bitwarden after 14 years
+                                    </h3>
+                                    <span class="m-recent-article__date">Mar 5, 2021</span>
+                                  </a>
+                                </div>
+                                <div class="glide__slide">
+                                  <a href="/blog/meteorological-meanderings-part-3-geocoding-and-reverse-geocoding/" class="m-recent-article">
+                                    <div class="m-recent-article__picture ">
+                                        <img src="https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDR8fGdsb2JlfGVufDB8fHw&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000" loading="lazy" alt="">
+                                    </div>
+                                    <h3 class="m-recent-article__title js-recent-article-title" title="Meteorological meanderings, part 3: geocoding and reverse geocoding">
+                                      Meteorological meanderings, part 3: geocoding and reverse geocoding
+                                    </h3>
+                                    <span class="m-recent-article__date">Feb 22, 2021</span>
+                                  </a>
+                                </div>
+                                <div class="glide__slide">
+                                  <a href="/blog/meteorological-meanderings-part-2-visualizations-and-long-range-forecasts/" class="m-recent-article">
+                                    <div class="m-recent-article__picture ">
+                                        <img src="https://images.unsplash.com/photo-1579003593419-98f949b9398f?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDEyfHx3ZWF0aGVyfGVufDB8fHw&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000" loading="lazy" alt="">
+                                    </div>
+                                    <h3 class="m-recent-article__title js-recent-article-title" title="Meteorological meanderings, part 2: visualizations and long-range forecasts">
+                                      Meteorological meanderings, part 2: visualizations and long-range forecasts
+                                    </h3>
+                                    <span class="m-recent-article__date">Feb 1, 2021</span>
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                    </section>
+                    <section class="m-tags">
+                      <h3 class="m-submenu-title">Tags</h3>
+                        <ul>
+                            <li>
+                              <a href="/tag/3d-modeling/">3D Modeling</a>
+                            </li>
+                            <li>
+                              <a href="/tag/3d-printing/">3D Printing</a>
+                            </li>
+                            <li>
+                              <a href="/tag/docker/">Docker</a>
+                            </li>
+                            <li>
+                              <a href="/tag/github-pages/">GitHub Pages</a>
+                            </li>
+                            <li>
+                              <a href="/tag/linux/">Linux</a>
+                            </li>
+                            <li>
+                              <a href="/tag/meta/">Meta</a>
+                            </li>
+                            <li>
+                              <a href="/tag/python/">Python</a>
+                            </li>
+                            <li>
+                              <a href="/tag/raspberry-pi/">Raspberry Pi</a>
+                            </li>
+                            <li>
+                              <a href="/tag/self-hosting/">Self-hosting</a>
+                            </li>
+                        </ul>
+                    </section>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </nav>
+          <div class="m-nav__right">
+            <button class="m-icon-button in-menu-main js-open-search" aria-label="Open search">
+              <span class="icon-search" aria-hidden="true"></span>
+            </button>
+            <div class="m-toggle-darkmode js-tooltip" data-tippy-content="Toggle dark mode" tabindex="0">
+              <label for="toggle-darkmode" class="sr-only">
+                Toggle dark mode
+              </label>
+              <input id="toggle-darkmode" type="checkbox" class="js-toggle-darkmode">
+              <div>
+                <span class="icon-moon moon" aria-hidden="true"></span>
+                <span class="icon-sunny sun" aria-hidden="true"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+
+<main class="main-wrap">
+    
+
+  <section class="m-hero with-picture" data-aos="fade">
+    <div class="m-hero__picture in-post"></div>
+    </section>
+  
+  <article>
+    <div class="l-content in-post">
+        <div class="l-wrapper in-post  js-aos-wrapper" data-aos="fade-up"
+          data-aos-delay="300">
+          <div
+            class="l-post-content  has-subscribe-form js-progress-content">
+            <header class="m-heading">
+              <h1 class="m-heading__title in-post">Meteorological meanderings, part 3: geocoding and reverse geocoding</h1>
+              <div class="m-heading__meta">
+                <span class="m-heading__meta__time">Feb 22, 2021</span>
+              </div>
+            </header>
+            <div class="pos-relative js-post-content">
+              <div class="m-share">
+                <div class="m-share__content js-sticky">
+                  <a href="https://www.facebook.com/sharer/sharer.php?u=https://trycatch.dev/blog/meteorological-meanderings-part-3-geocoding-and-reverse-geocoding/"
+                    class="m-icon-button filled in-share" target="_blank" rel="noopener" aria-label="Facebook">
+                    <span class="icon-facebook" aria-hidden="true"></span>
+                  </a>
+                  <a href="https://twitter.com/intent/tweet?text=Meteorological%20meanderings%2C%20part%203%3A%20geocoding%20and%20reverse%20geocoding&url=https://trycatch.dev/blog/meteorological-meanderings-part-3-geocoding-and-reverse-geocoding/"
+                    class="m-icon-button filled in-share" target="_blank" rel="noopener" aria-label="Twitter">
+                    <span class="icon-twitter" aria-hidden="true"></span>
+                  </a>
+                  <button class="m-icon-button filled in-share progress js-scrolltop" aria-label="Scroll to top">
+                    <span class="icon-arrow-top" aria-hidden="true"></span>
+                    <svg aria-hidden="true">
+                      <circle class="progress-ring__circle js-progress" fill="transparent" r="0" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <p>Strictly speaking, this isn't meteorology. However, in order to display meteorological data for user-requested locations, we must be able to translate our users' requests into coordinates.</p><p>If a user searches for the name of a city, we need to be able to get a set of coordinates for that city, since our weather information is all based on coordinates. The process for doing such a search is called geocoding. Conversely, if we happen to have an interactive map and we let the user click on any point on it, it'd be nice to display a friendly name for the location they clicked. Translating coordinates to the name (or names) of a location is called reverse geocoding.</p><p>The easy solution for handling geocoding is to use a third-party service, like <a href="https://developer.here.com/products/geocoding-and-search">HERE</a>. For low-volume traffic, using OpenStreetMap's own hosted Nominatim geocoder instance <a href="https://operations.osmfoundation.org/policies/nominatim/">could be an option</a> as well. Writing our own system from scratch is impractical, for a few reasons. First, there are available open source applications already out there. Second, it's quite a challenge to do fuzzy text matches against potentially gigantic datasets. And third, there would be a lot of work involved in importing data correctly in various formats from multiple data sources.</p><p>If we want to simply host our own geocoding system, however, we have a few options. There's <a href="https://github.com/osm-search/Nominatim">Nominatim</a> itself, which, as mentioned above, is used by OpenStreetMap. Alternatively, applications like <a href="https://github.com/pelias/pelias">Pelias</a> and <a href="https://github.com/gisgraphy/gisgraphy">Gisgraphy</a> can import data from a variety of sources. We'll choose Nominatim, if for no other reason, then to have the ability to compare our locally-installed version's results to those of the <a href="https://nominatim.openstreetmap.org">OSM-hosted</a> one. It's a great way to do a sanity check.</p><p>Before installing and configuring Nominatim, however, we must figure out how to get source data for it. Since Nominatim uses OpenStreetMap data readily, we can look at downloading it from <a href="https://download.geofabrik.de/">Geofabrik</a>. This Germany-based company generously provides free downloads of various OSM data extracts. To download US data, there is a North America sub-region file available, which is currently sitting at 7.1GB for the <code>.osm.pbf</code> (<a href="https://en.wikipedia.org/wiki/Protocol_Buffers">Protobuf</a>) version. But we don't want to import the entire thing. Assuming we're not trying to provide hyper-local weather information, there's no need to have exact building or even street data, which can take up a lot of space. What we want to do is filter out the data we don't need, and leave in just the data we do need. To filter the source data, we can use <a href="https://wiki.openstreetmap.org/wiki/Osmfilter">osmfilter</a> from <a href="https://gitlab.com/osm-c-tools/osmctools">osm-c-tools</a>. The <code>osmctools</code> package is available in Debian/Ubuntu and other Linux distros; pre-built Windows binaries exist as well. The filtering application takes in a wide range of parameters that let you specify exactly how you want to perform the filtering. It even has provisions for modifying data, not just removing it. An example of how we can filter out unwanted data might look like this:</p><pre><code class="language-sh">$ osmconvert source-data.osm.pbf --out-o5m &gt; source-data.o5m
+$ osmfilter source-data.o5m --keep="name= and ( admin_level= or place= or boundary=administrative )" --drop-version --out-o5m -o=filtered-data.o5m
+$ osmconvert filtered-data.o5m --out-pbf &gt; filtered-data.osm.pbf</code></pre><p>Because osmfilter doesn't work with Protobuf files directly, we first have to convert our source data to the <code><a href="https://wiki.openstreetmap.org/wiki/O5m">o5m</a></code> format. <a href="https://wiki.openstreetmap.org/wiki/Osmconvert">Osmconvert</a>, another application from osm-c-tools, can easily do that for us, as seen above. Then we perform the filtering itself, and after that, we convert the filtered data back to the Protobuf format. With the current version of US data, the 7.1GB file becomes a mere 80MB after filtering and conversion.</p><p>While the filtering example above is relatively short, filters can get much more complicated. The <code>--keep</code> parameter, predictably, tells osmfilter which tags to keep. Tags are nothing more than key/value pairs, and they form the basis for how OSM data is categorized. For example, <code>boundary=administrative</code> will give us a lot of (but not all) governmental areas as large as countries and as small as neighborhoods. Since OSM data is crowdsourced and continually evolving, there are times when a tag is incorrectly used, or perhaps the wrong tag is used. Also, tagging standards for OSM data have not remained fixed, so obsolete tags can still be found in use in some locations. That's why the data filtering process isn't always straightforward. For city-level data, the filtering in the above example should get us pretty close to a good state. With some manual verification and filter tweaking, it should be pretty easy to get it to be "good enough".</p><p>Once we have the filtered data, we can get to work on installing and configuring Nominatim. An easy way to do this is to use Docker. There's a user-friendly <a href="https://github.com/mediagis/nominatim-docker">GitHub repo simply called "nominatim-docker"</a> that contains all the necessary components to set this up. Following the repository's instructions for <a href="https://github.com/mediagis/nominatim-docker/tree/master/3.5">version 3.5</a> of Nominatim, our setup steps might look like this:</p><pre><code class="language-sh">$ mv filtered-data.osm.pbf /home/me/nominatimdata/
+$ git clone https://github.com/mediagis/nominatim-docker.git
+$ cd nominatim-docker/3.5
+$ docker build --pull --rm -t nominatim .
+$ docker run -t -v /home/me/nominatimdata:/data nominatim sh /app/init.sh /data/filtered-data.osm.pbf postgresdata 4
+$ docker run --restart=always -p 7070:8080 -d --name nominatim -v /home/me/nominatimdata/postgresdata:/var/lib/postgresql/12/main nominatim bash /app/start.sh</code></pre><p>Building the Docker image locally allows for easy modifications to what's included in the image. It also, conveniently, doesn't force us to download a multi-gigabyte image, which these can be. The first call to <code>docker run</code> imports our filtered data into a Postgres database running inside the Docker container. The second call launches the actual web application.</p><p>Now that we have Nominatim running in a Docker container and serving HTTP requests on port 7070, we can <a href="https://nominatim.org/release-docs/latest/api/Overview/">use its API</a> to perform geocoding and reverse geocoding queries. We can also access port 7070 via a web browser and use the provided web interface to make test queries. <em>(Note: as of Nominatim 3.6, the web interface is in a <a href="https://github.com/osm-search/nominatim-ui">separate project</a>.)</em></p><p>An important addition to make to this setup involves search ranking. By default, roughly speaking, larger areas will rank higher in search results than smaller areas. That means cities will be ahead of similarly-named neighborhoods, and US states will be ahead of cities. This isn't always desirable. If we search for "Austin", for example, the top result will be Austin County, Texas. That wouldn't necessarily be a major issue for weather data if the city of Austin resided in this county. But it doesn't. Austin is in Travis County, Texas. Chances are, when a user searches for "Austin", they're looking for the city. We want some amount of intelligence in our search rankings to fix issues like this.</p><p>Enter: Wikipedia, the venerable source of information on virtually anything. We can use a subset of its data to improve our internal search rankings. By taking into account how many other Wikipedia articles link to the entries for our OSM locations, we can measure their relative popularity. In other words, with our Austin example above, there should be more Wikipedia articles linking to the city of Austin than articles linking to Austin County, and we can use that information to alter the search results to place the city higher in the rankings. In fact, Nominatim has <a href="https://nominatim.org/release-docs/latest/admin/Import/#wikipediawikidata-rankings">provisions</a> for doing just this. And if we perform the import process, we will see the first search result for "Austin" now return the city. With this change, our geocoding setup should be ready.</p><p>In the next post, we'll look at generating map tiles from OSM data for the purposes of displaying them in an interactive pan/zoom map.</p>
+                <section class="m-tags in-post">
+                  <h3 class="m-submenu-title">Tags</h3>
+                  <ul>
+                      <li>
+                        <a href="/tag/weather/" title="Weather">Weather</a>
+                      </li>
+                  </ul>
+                </section>
+            </div>
+          </div>
+        </div>
+          <section class="m-subscribe-section">
+            <div class="l-wrapper in-post">
+              <div class="m-subscribe-section__content">
+                <div class="m-subscribe-section__text">
+                  <h4 class="m-subscribe-section__title">Subscribe to our newsletter</h4>
+                  <p class="m-subscribe-section__description">
+                    Get the latest posts delivered right to your inbox.
+                  </p>
+                </div>
+                <div class="m-subscribe-section__form">
+                  
+<div class="m-subscribe-section__form">
+  <form data-members-form="subscribe" id="newsletter-form" class="m-subscribe-section__container">
+    <div class="m-subscribe__form">
+      <div class="pos-relative">
+        <label for="newsletter-input" class="sr-only">Your email address</label>
+        <input data-members-email id="newsletter-input" class="m-input in-subscribe-section" type="email"
+          placeholder="Your email address" required />
+      </div>
+      <button id="newsletter-button" class="m-button primary block" type="submit">Subscribe</button>
+    </div>
+    <div class="m-subscribe__success">
+      <header class="m-heading no-margin">
+        <img src="/assets/images/success.png?v=d450aebd8c" alt="Success!" class="m-subscribe__success_icon">
+        <p class="m-heading__description in-newsletter-form">
+          Now check your inbox and click the link to confirm your subscription.
+        </p>
+      </header>
+    </div>
+    <p class="m-subscribe__invalid m-small-text">
+      Please enter a valid email address
+    </p>
+    <p class="m-subscribe__error m-small-text">
+      Oops! There was an error sending the email, please try later.
+    </p>
+  </form>
+</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        <section class="m-recommended">
+          <div class="l-wrapper in-recommended">
+            <h3 class="m-section-title in-recommended">Recommended for you</h3>
+            <div class="m-recommended-articles">
+              <div class="m-recommended-slider glide js-recommended-slider">
+                <div class="glide__track" data-glide-el="track">
+                  <div class="glide__slides">
+                    
+    <div class="m-recommended-slider__item glide__slide">
+  <article class="m-article-card  post tag-blog tag-python tag-raspberry-pi tag-3d-printing tag-3d-modeling">
+    <div class="m-article-card__picture">
+      <a href="/blog/raspberry-pi-powered-webcam/" class="m-article-card__picture-link" aria-hidden="true" tabindex="-1"></a>
+        <img class="m-article-card__picture-background" src="https://images.unsplash.com/photo-1587919057555-d728ff5beac3?ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;fm&#x3D;jpg&amp;crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;w&#x3D;2000&amp;fit&#x3D;max&amp;ixid&#x3D;eyJhcHBfaWQiOjExNzczfQ" loading="lazy" alt="">
+    </div>
+      <div class="m-article-card__info no-tag">
+      <a href="/blog/raspberry-pi-powered-webcam/" class="m-article-card__info-link" aria-label="Raspberry Pi-powered webcam">
+        <div>
+          <h2 class="m-article-card__title js-article-card-title " title="Raspberry Pi-powered webcam">
+            Raspberry Pi-powered webcam
+          </h2>
+        </div>
+        <div class="m-article-card__timestamp">
+          <span>Aug 30, 2020</span>
+          <span>&bull;</span>
+          <span>7 min read</span>
+        </div>
+      </a>
+    </div>
+  </article>
+    </div>
+    <div class="m-recommended-slider__item glide__slide">
+  <article class="m-article-card  post tag-blog tag-docker tag-linux tag-self-hosting">
+    <div class="m-article-card__picture">
+      <a href="/blog/self-hosting-a-streaming-video-platform/" class="m-article-card__picture-link" aria-hidden="true" tabindex="-1"></a>
+        <img class="m-article-card__picture-background" src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;fm&#x3D;jpg&amp;crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;w&#x3D;2000&amp;fit&#x3D;max&amp;ixid&#x3D;eyJhcHBfaWQiOjExNzczfQ" loading="lazy" alt="">
+    </div>
+      <div class="m-article-card__info no-tag">
+      <a href="/blog/self-hosting-a-streaming-video-platform/" class="m-article-card__info-link" aria-label="Self-hosting a streaming video platform">
+        <div>
+          <h2 class="m-article-card__title js-article-card-title " title="Self-hosting a streaming video platform">
+            Self-hosting a streaming video platform
+          </h2>
+        </div>
+        <div class="m-article-card__timestamp">
+          <span>Sep 12, 2020</span>
+          <span>&bull;</span>
+          <span>7 min read</span>
+        </div>
+      </a>
+    </div>
+  </article>
+    </div>
+    <div class="m-recommended-slider__item glide__slide">
+  <article class="m-article-card  post tag-blog tag-docker tag-linux tag-self-hosting">
+    <div class="m-article-card__picture">
+      <a href="/blog/self-hosting-a-video-chat-system/" class="m-article-card__picture-link" aria-hidden="true" tabindex="-1"></a>
+        <img class="m-article-card__picture-background" src="https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;fm&#x3D;jpg&amp;crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;w&#x3D;2000&amp;fit&#x3D;max&amp;ixid&#x3D;eyJhcHBfaWQiOjExNzczfQ" loading="lazy" alt="">
+    </div>
+      <div class="m-article-card__info no-tag">
+      <a href="/blog/self-hosting-a-video-chat-system/" class="m-article-card__info-link" aria-label="Self-hosting a video chat system">
+        <div>
+          <h2 class="m-article-card__title js-article-card-title " title="Self-hosting a video chat system">
+            Self-hosting a video chat system
+          </h2>
+        </div>
+        <div class="m-article-card__timestamp">
+          <span>Sep 10, 2020</span>
+          <span>&bull;</span>
+          <span>4 min read</span>
+        </div>
+      </a>
+    </div>
+  </article>
+    </div>
+                  </div>
+                </div>
+                <div data-glide-el="controls" class="glide__arrows js-controls">
+                  <button data-glide-dir="<" class="m-icon-button filled in-recommended-articles glide-prev" aria-label="Previous">
+                    <span class="icon-arrow-left" aria-hidden="true"></span>
+                  </button>
+                  <button data-glide-dir=">" class="m-icon-button filled in-recommended-articles glide-next" aria-label="Next">
+                    <span class="icon-arrow-right" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+    </div>
+  </article>
+</main>
+
+
+
+    
+<div class="m-search js-search" role="dialog" aria-modal="true" aria-label="Search">
+  <button class="m-icon-button outlined as-close-search js-close-search" aria-label="Close search">
+    <span class="icon-close" aria-hidden="true"></span>
+  </button>
+  <div class="m-search__content">
+    <form class="m-search__form">
+      <div class="pos-relative">
+        <span class="icon-search m-search-icon" aria-hidden="true"></span>
+        <label for="search-input" class="sr-only">
+          Type to search
+        </label>
+        <input id="search-input" type="text" class="m-input in-search js-input-search" placeholder="Type to search">
+      </div>
+    </form>
+    <div class="js-search-results hide"></div>
+    <p class="m-not-found align-center hide js-no-results">
+      No results for your search, please try with something else.
+    </p>
+  </div>
+</div>
+
+    
+<footer class="m-footer">
+  <div class="m-footer__content">
+    <p class="m-footer-copyright">
+      <span>trycatch.dev &copy; 2021</span>
+    </p>
+
+    <nav class="m-footer-social">
+        <a href="https://twitter.com/arktronic" target="_blank" rel="noopener" aria-label="Twitter">
+          <span class="icon-twitter" aria-hidden="true"></span>
+        </a>
+      <a href="https://trycatch.dev/rss.xml" aria-label="RSS">
+        <span class="icon-rss" aria-hidden="true"></span>
+      </a>
+    </nav>
+    <p class="m-footer-copyright jslicense">
+      <a href="/assets/html/javascript.html?v=d450aebd8c" rel="jslicense">JavaScript license information</a>
+    </p>
+  </div>
+</footer>
+
+    <div class="m-alert success subscribe js-alert" data-notification="subscribe">
+  Great! You&#x27;ve successfully subscribed.
+  <button class="m-alert__close js-notification-close" aria-label="Close">
+    <span class="icon-close"></span>
+  </button>
+</div>
+
+<div class="m-alert success signup js-alert" data-notification="signup">
+  Great! Next, complete checkout for full access.
+  <button class="m-alert__close js-notification-close" aria-label="Close">
+    <span class="icon-close"></span>
+  </button>
+</div>
+
+<div class="m-alert success signin js-alert" data-notification="signin">
+  Welcome back! You&#x27;ve successfully signed in.
+  <button class="m-alert__close js-notification-close" aria-label="Close">
+    <span class="icon-close"></span>
+  </button>
+</div>
+
+<div class="m-alert success checkout js-alert" data-notification="checkout">
+  Success! Your account is fully activated, you now have access to all content.
+  <button class="m-alert__close js-notification-close" aria-label="Close">
+    <span class="icon-close"></span>
+  </button>
+</div>
+    <script crossorigin="anonymous" src="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver%2CPromise%2CArray.prototype.includes%2CString.prototype.endsWith%2CString.prototype.startsWith%2CObject.assign%2CNodeList.prototype.forEach"></script>
+    <script defer src="/assets/js/manifest.js?v=d450aebd8c"></script>
+    <script defer src="/assets/js/vendor/content-api.min.js?v=d450aebd8c"></script>
+    <script defer src="/assets/js/vendor.js?v=d450aebd8c"></script>
+    <script defer src="/assets/js/app.js?v=d450aebd8c"></script>
+    <script defer src="/assets/js/prism.js?v=d450aebd8c"></script>
+
+      <script defer src="/assets/js/post.js?v=d450aebd8c"></script>
+
+
+    <script type="text/javascript">
+    document.body.classList.add('line-numbers');
+    document.querySelectorAll('a.in-share').forEach(a => {
+        a.classList.add('js-tooltip');
+        a.dataset.tippyContent = 'Share';
+    });
+</script>
+<script type="text/javascript">
+    if (document.location.hostname == 'trycatch.dev') {
+        window.goatcounter = {
+            endpoint: 'https://count-trycatch.arktronic.com/count',
+        }
+        var s = document.createElement('script');
+        s.type = 'text/javascript';
+        s.src = '//count-trycatch.arktronic.com/count.js';
+        document.getElementsByTagName('head')[0].appendChild(s);
+	}
+</script>
+  </body>
+</html>

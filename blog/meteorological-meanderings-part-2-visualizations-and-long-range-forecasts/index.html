@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>Meteorological meanderings, part 2: visualizations and long-range forecasts</title>
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="preload" href="/assets/css/app.css?v=d450aebd8c" as="style" />
+    <link rel="preload" href="/assets/css/prism.css?v=d450aebd8c" as="style" />
+    <link rel="preload" href="/assets/js/manifest.js?v=d450aebd8c" as="script" />
+    <link rel="preload" href="/assets/js/vendor/content-api.min.js?v=d450aebd8c" as="script" />
+    <link rel="preload" href="/assets/js/vendor.js?v=d450aebd8c" as="script" />
+    <link rel="preload" href="/assets/js/app.js?v=d450aebd8c" as="script" />
+    <link rel="preload" href="/assets/js/prism.js?v=d450aebd8c" as="script" />
+    <link rel="preconnect" href="https://polyfill.io">
+    <link rel="dns-prefetch" href="https://polyfill.io">
+
+      <link rel="preload" href="/assets/css/post.css?v=d450aebd8c" as="style" />
+  <link rel="preload" href="/assets/js/post.js?v=d450aebd8c" as="script" />
+
+
+    <style>
+      /* These font-faces are here to make fonts work if the Ghost instance is installed in a subdirectory */
+
+      /* source-sans-pro-regular */
+      @font-face {
+        font-family: 'Source Sans Pro';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: local('Source Sans Pro Regular'), local('SourceSansPro-Regular'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-regular.woff2?v=d450aebd8c") format('woff2'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-regular.woff?v=d450aebd8c") format('woff');
+      }
+
+      /* source-sans-pro-600 */
+      @font-face {
+        font-family: 'Source Sans Pro';
+        font-style: normal;
+        font-weight: 600;
+        font-display: swap;
+        src: local('Source Sans Pro SemiBold'), local('SourceSansPro-SemiBold'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-600.woff2?v=d450aebd8c") format('woff2'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-600.woff?v=d450aebd8c") format('woff');
+      }
+
+      /* source-sans-pro-700 */
+      @font-face {
+        font-family: 'Source Sans Pro';
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-700.woff2?v=d450aebd8c") format('woff2'),
+            url("/assets/fonts/source-sans-pro/source-sans-pro-700.woff?v=d450aebd8c") format('woff');
+      }
+
+      /* iconmoon */
+      @font-face {
+        font-family: 'icomoon';
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+        src: url("/assets/fonts/icomoon/icomoon.eot?aoz2mo?v=d450aebd8c");
+        src: url("/assets/fonts/icomoon/icomoon.eot?aoz2mo#iefix?v=d450aebd8c") format('embedded-opentype'),
+        url("/assets/fonts/icomoon/icomoon.ttf?aoz2mo?v=d450aebd8c") format('truetype'),
+        url("/assets/fonts/icomoon/icomoon.woff?aoz2mo?v=d450aebd8c") format('woff'),
+        url("/assets/fonts/icomoon/icomoon.svg?aoz2mo#icomoon?v=d450aebd8c") format('svg');
+      }
+    </style>
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/app.css?v=d450aebd8c" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/prism.css?v=d450aebd8c" media="screen" />
+
+      <link rel="stylesheet" type="text/css" href="/assets/css/post.css?v=d450aebd8c" media="screen" />
+
+
+      <style>
+    .m-hero__picture {
+      background-image: url(https://images.unsplash.com/photo-1579003593419-98f949b9398f?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDEyfHx3ZWF0aGVyfGVufDB8fHw&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000);
+    }
+  
+    @media(max-width: 1000px) {
+      .m-hero__picture {
+        background-image: url(https://images.unsplash.com/photo-1579003593419-98f949b9398f?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDEyfHx3ZWF0aGVyfGVufDB8fHw&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000);
+      }
+    }
+  
+    @media(max-width: 600px) {
+      .m-hero__picture {
+        background-image: url(https://images.unsplash.com/photo-1579003593419-98f949b9398f?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDEyfHx3ZWF0aGVyfGVufDB8fHw&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000);
+      }
+    }
+  </style>
+
+
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="canonical" href="https://trycatch.dev/blog/meteorological-meanderings-part-2-visualizations-and-long-range-forecasts/" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    
+    <meta property="og:site_name" content="trycatch.dev" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Meteorological meanderings, part 2: visualizations and long-range forecasts" />
+    <meta property="og:description" content="In the previous post, we used GDAL to query temperature information from a downloaded HRRR GRIB2 file. That query, however, was for a single point. Sometimes it helps to be able to see many points at once, preferably on a map. This can be useful for determining whether a particular" />
+    <meta property="og:url" content="https://trycatch.dev/blog/meteorological-meanderings-part-2-visualizations-and-long-range-forecasts/" />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1579003593419-98f949b9398f?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDEyfHx3ZWF0aGVyfGVufDB8fHw&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000" />
+    <meta property="article:published_time" content="2021-02-01T13:00:00.000Z" />
+    <meta property="article:modified_time" content="2021-02-01T13:40:52.000Z" />
+    <meta property="article:tag" content="Weather" />
+    
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Meteorological meanderings, part 2: visualizations and long-range forecasts" />
+    <meta name="twitter:description" content="In the previous post, we used GDAL to query temperature information from a downloaded HRRR GRIB2 file. That query, however, was for a single point. Sometimes it helps to be able to see many points at once, preferably on a map. This can be useful for determining whether a particular" />
+    <meta name="twitter:url" content="https://trycatch.dev/blog/meteorological-meanderings-part-2-visualizations-and-long-range-forecasts/" />
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1579003593419-98f949b9398f?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDEyfHx3ZWF0aGVyfGVufDB8fHw&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000" />
+    <meta name="twitter:label1" content="Written by" />
+    <meta name="twitter:data1" content="Sasha" />
+    <meta name="twitter:label2" content="Filed under" />
+    <meta name="twitter:data2" content="Weather" />
+    <meta name="twitter:site" content="@arktronic" />
+    <meta property="og:image:width" content="2000" />
+    <meta property="og:image:height" content="1330" />
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "trycatch.dev",
+        "url": "https://trycatch.dev/",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://trycatch.dev/content/images/2020/08/trycatch-logo-3-2.png"
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Sasha",
+        "url": "https://trycatch.dev/author/sasha/",
+        "sameAs": []
+    },
+    "headline": "Meteorological meanderings, part 2: visualizations and long-range forecasts",
+    "url": "https://trycatch.dev/blog/meteorological-meanderings-part-2-visualizations-and-long-range-forecasts/",
+    "datePublished": "2021-02-01T13:00:00.000Z",
+    "dateModified": "2021-02-01T13:40:52.000Z",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://images.unsplash.com/photo-1579003593419-98f949b9398f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MXwxMTc3M3wwfDF8c2VhcmNofDEyfHx3ZWF0aGVyfGVufDB8fHw&ixlib=rb-1.2.1&q=80&w=2000",
+        "width": 2000,
+        "height": 1330
+    },
+    "keywords": "Weather",
+    "description": "In the previous post, we used GDAL to query temperature information from a\ndownloaded HRRR GRIB2 file. That query, however, was for a single point.\nSometimes it helps to be able to see many points at once, preferably on a map.\nThis can be useful for determining whether a particular band &quot;looks right&quot;, as\nwell as for doing sanity checks when writing code to query or visualize the data\nyourself.\n\nA brief look at QGIS\nThe best tool I&#x27;ve found so far for visualizing meteorological data is QGIS\n[http",
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://trycatch.dev/"
+    }
+}
+    </script>
+
+    <meta name="generator" content="Ghost 4.2" />
+    <link rel="alternate" type="application/rss+xml" title="trycatch.dev" href="https://trycatch.dev/rss.xml" />
+    <script defer src="https://unpkg.com/@tryghost/portal@~1.1.0/umd/portal.min.js" data-ghost="https://trycatch.dev/"></script><style> .gh-post-upgrade-cta-content,
+.gh-post-upgrade-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    text-align: center;
+    width: 100%;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.gh-post-upgrade-cta-content {
+    border-radius: 8px;
+    padding: 40px 4vw;
+}
+
+.gh-post-upgrade-cta h2 {
+    color: #ffffff;
+    font-size: 28px;
+    letter-spacing: -0.2px;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta p {
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta small {
+    font-size: 16px;
+    letter-spacing: -0.2px;
+}
+
+.gh-post-upgrade-cta a {
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a:hover {
+    color: #ffffff;
+    opacity: 0.8;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a.gh-btn {
+    display: block;
+    background: #ffffff;
+    text-decoration: none;
+    margin: 28px 0 0;
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.gh-post-upgrade-cta a.gh-btn:hover {
+    opacity: 0.92;
+}</style>
+    <style>
+    :root {
+    	--primary-subtle-color: #D76708;
+        --link-color: #D76708;
+    }
+    
+    body.home-template .m-hero.with-picture {
+        min-height: 365px;
+    }
+    
+    section.m-hero .m-hero__content a.m-button.filled {
+        display: none;
+    }
+    
+    section.m-subscribe-section {
+        display: none;
+    }
+    
+    [data-theme="light"] {
+        --footer-background-color: #D76708;
+    }
+    
+    [data-theme="dark"] {
+        --secondary-border-color: #222;
+    }
+    
+    .l-post-content pre code {
+        color: inherit;
+        background-color: inherit;
+    }
+    
+    .l-post-content .kg-code-card figcaption {
+        margin-top: -35px;
+    }
+</style>
+<style>:root {--ghost-accent-color: #15171A;}</style>
+
+    <script>
+      // @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt Expat
+      const ghostHost = "https://trycatch.dev"
+      // @license-end
+    </script>
+  </head>
+  <body class="post-template tag-blog tag-weather">
+    
+
+
+
+  
+<header class="m-header with-picture js-header">
+  <div class="m-mobile-topbar" data-aos="fade-down">
+    <button class="m-icon-button in-mobile-topbar js-open-menu" aria-label="Open menu">
+      <span class="icon-menu" aria-hidden="true"></span>
+    </button>
+      <a href="https://trycatch.dev" class="m-logo in-mobile-topbar">
+        <img src="https://trycatch.dev/content/images/2020/08/trycatch-logo-3-2.png" alt="trycatch.dev">
+      </a>
+    <button class="m-icon-button in-mobile-topbar js-open-search" aria-label="Open search">
+      <span class="icon-search" aria-hidden="true"></span>
+    </button>
+  </div>
+
+  <div class="m-menu js-menu">
+    <button class="m-icon-button outlined as-close-menu js-close-menu" aria-label="Close menu">
+      <span class="icon-close"></span>
+    </button>
+    <div class="m-menu__main" data-aos="fade-down">
+      <div class="l-wrapper">
+        <div class="m-nav js-main-nav">
+          <nav class="m-nav__left js-main-nav-left" role="navigation" aria-label="Main menu">
+            <ul>
+                <li class="only-desktop">
+                  <a href="https://trycatch.dev" class="m-logo">
+                    <img src="https://trycatch.dev/content/images/2020/08/trycatch-logo-3-2.png" alt="trycatch.dev">
+                  </a>
+                </li>
+                
+    <li class="nav-home">
+      <a href="https://trycatch.dev/">Home</a>
+    </li>
+    <li class="nav-about">
+      <a href="https://trycatch.dev/about/">About</a>
+    </li>
+    <li class="nav-arktronic">
+      <a href="https://twitter.com/arktronic">@Arktronic</a>
+    </li>
+
+              <li class="submenu-option js-submenu-option">
+                <button class="m-icon-button in-menu-main more js-toggle-submenu" aria-label="Open submenu">
+                  <span class="icon-more" aria-hidden="true"></span>
+                </button>
+                <div class="m-submenu js-submenu">
+                  <div class="l-wrapper in-submenu">
+                    <section class="m-recent-articles">
+                      <h3 class="m-submenu-title in-recent-articles">Recent articles</h3>
+                          <div class="glide js-recent-slider">
+                            <div class="glide__track" data-glide-el="track">
+                              <div class="glide__slides">
+                                <div class="glide__slide">
+                                  <a href="/blog/meteorological-meanderings-part-4-creating-interactive-maps/" class="m-recent-article">
+                                    <div class="m-recent-article__picture ">
+                                        <img src="https://images.unsplash.com/photo-1504807959081-3dafd3871909?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MnwxMTc3M3wwfDF8c2VhcmNofDg2fHxtYXB8ZW58MHx8fHwxNjIwMjY5ODIy&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000" loading="lazy" alt="">
+                                    </div>
+                                    <h3 class="m-recent-article__title js-recent-article-title" title="Meteorological meanderings, part 4: creating interactive maps">
+                                      Meteorological meanderings, part 4: creating interactive maps
+                                    </h3>
+                                    <span class="m-recent-article__date">May 11, 2021</span>
+                                  </a>
+                                </div>
+                                <div class="glide__slide">
+                                  <a href="/blog/switching-from-keepass-to-bitwarden-after-14-years/" class="m-recent-article">
+                                    <div class="m-recent-article__picture ">
+                                        <img src="https://images.unsplash.com/photo-1609358905581-e5381612486e?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDN8fGJhbmslMjB2YXVsdHxlbnwwfHx8&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000" loading="lazy" alt="">
+                                    </div>
+                                    <h3 class="m-recent-article__title js-recent-article-title" title="Switching from KeePass to Bitwarden after 14 years">
+                                      Switching from KeePass to Bitwarden after 14 years
+                                    </h3>
+                                    <span class="m-recent-article__date">Mar 5, 2021</span>
+                                  </a>
+                                </div>
+                                <div class="glide__slide">
+                                  <a href="/blog/meteorological-meanderings-part-3-geocoding-and-reverse-geocoding/" class="m-recent-article">
+                                    <div class="m-recent-article__picture ">
+                                        <img src="https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDR8fGdsb2JlfGVufDB8fHw&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000" loading="lazy" alt="">
+                                    </div>
+                                    <h3 class="m-recent-article__title js-recent-article-title" title="Meteorological meanderings, part 3: geocoding and reverse geocoding">
+                                      Meteorological meanderings, part 3: geocoding and reverse geocoding
+                                    </h3>
+                                    <span class="m-recent-article__date">Feb 22, 2021</span>
+                                  </a>
+                                </div>
+                                <div class="glide__slide">
+                                  <a href="/blog/meteorological-meanderings-part-2-visualizations-and-long-range-forecasts/" class="m-recent-article">
+                                    <div class="m-recent-article__picture ">
+                                        <img src="https://images.unsplash.com/photo-1579003593419-98f949b9398f?crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;fit&#x3D;max&amp;fm&#x3D;jpg&amp;ixid&#x3D;MXwxMTc3M3wwfDF8c2VhcmNofDEyfHx3ZWF0aGVyfGVufDB8fHw&amp;ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;w&#x3D;2000" loading="lazy" alt="">
+                                    </div>
+                                    <h3 class="m-recent-article__title js-recent-article-title" title="Meteorological meanderings, part 2: visualizations and long-range forecasts">
+                                      Meteorological meanderings, part 2: visualizations and long-range forecasts
+                                    </h3>
+                                    <span class="m-recent-article__date">Feb 1, 2021</span>
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                    </section>
+                    <section class="m-tags">
+                      <h3 class="m-submenu-title">Tags</h3>
+                        <ul>
+                            <li>
+                              <a href="/tag/3d-modeling/">3D Modeling</a>
+                            </li>
+                            <li>
+                              <a href="/tag/3d-printing/">3D Printing</a>
+                            </li>
+                            <li>
+                              <a href="/tag/docker/">Docker</a>
+                            </li>
+                            <li>
+                              <a href="/tag/github-pages/">GitHub Pages</a>
+                            </li>
+                            <li>
+                              <a href="/tag/linux/">Linux</a>
+                            </li>
+                            <li>
+                              <a href="/tag/meta/">Meta</a>
+                            </li>
+                            <li>
+                              <a href="/tag/python/">Python</a>
+                            </li>
+                            <li>
+                              <a href="/tag/raspberry-pi/">Raspberry Pi</a>
+                            </li>
+                            <li>
+                              <a href="/tag/self-hosting/">Self-hosting</a>
+                            </li>
+                        </ul>
+                    </section>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </nav>
+          <div class="m-nav__right">
+            <button class="m-icon-button in-menu-main js-open-search" aria-label="Open search">
+              <span class="icon-search" aria-hidden="true"></span>
+            </button>
+            <div class="m-toggle-darkmode js-tooltip" data-tippy-content="Toggle dark mode" tabindex="0">
+              <label for="toggle-darkmode" class="sr-only">
+                Toggle dark mode
+              </label>
+              <input id="toggle-darkmode" type="checkbox" class="js-toggle-darkmode">
+              <div>
+                <span class="icon-moon moon" aria-hidden="true"></span>
+                <span class="icon-sunny sun" aria-hidden="true"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+
+<main class="main-wrap">
+    
+
+  <section class="m-hero with-picture" data-aos="fade">
+    <div class="m-hero__picture in-post"></div>
+    </section>
+  
+  <article>
+    <div class="l-content in-post">
+        <div class="l-wrapper in-post  js-aos-wrapper" data-aos="fade-up"
+          data-aos-delay="300">
+          <div
+            class="l-post-content  has-subscribe-form js-progress-content">
+            <header class="m-heading">
+              <h1 class="m-heading__title in-post">Meteorological meanderings, part 2: visualizations and long-range forecasts</h1>
+              <div class="m-heading__meta">
+                <span class="m-heading__meta__time">Feb 1, 2021</span>
+              </div>
+            </header>
+            <div class="pos-relative js-post-content">
+              <div class="m-share">
+                <div class="m-share__content js-sticky">
+                  <a href="https://www.facebook.com/sharer/sharer.php?u=https://trycatch.dev/blog/meteorological-meanderings-part-2-visualizations-and-long-range-forecasts/"
+                    class="m-icon-button filled in-share" target="_blank" rel="noopener" aria-label="Facebook">
+                    <span class="icon-facebook" aria-hidden="true"></span>
+                  </a>
+                  <a href="https://twitter.com/intent/tweet?text=Meteorological%20meanderings%2C%20part%202%3A%20visualizations%20and%20long-range%20forecasts&url=https://trycatch.dev/blog/meteorological-meanderings-part-2-visualizations-and-long-range-forecasts/"
+                    class="m-icon-button filled in-share" target="_blank" rel="noopener" aria-label="Twitter">
+                    <span class="icon-twitter" aria-hidden="true"></span>
+                  </a>
+                  <button class="m-icon-button filled in-share progress js-scrolltop" aria-label="Scroll to top">
+                    <span class="icon-arrow-top" aria-hidden="true"></span>
+                    <svg aria-hidden="true">
+                      <circle class="progress-ring__circle js-progress" fill="transparent" r="0" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <p>In the previous post, we used GDAL to query temperature information from a downloaded HRRR GRIB2 file. That query, however, was for a single point. Sometimes it helps to be able to see many points at once, preferably on a map. This can be useful for determining whether a particular band "looks right", as well as for doing sanity checks when writing code to query or visualize the data yourself.</p><h3 id="a-brief-look-at-qgis">A brief look at QGIS</h3><p>The best tool I've found so far for visualizing meteorological data is <a href="https://www.qgis.org">QGIS</a>. It's an extremely powerful cross-platform piece of software, with many features, but we don't need the vast majority of them. To visualize a band from HRRR with QGIS, we can start by bringing in a world map to orient ourselves. Thankfully, that's just a few clicks away, thanks to built-in support for OpenStreetMap:</p><figure class="kg-card kg-image-card"><img src="https://trycatch.dev/content/images/2021/01/qgis-osm.gif" class="kg-image" alt="Animated screen capture of loading OpenStreetMap in QGIS" loading="lazy" width="1124" height="750"></figure><p>Once we have the map pulled up, we can load HRRR as a separate layer on top of the OSM layer:</p><figure class="kg-card kg-image-card"><img src="https://trycatch.dev/content/images/2021/01/qgis-hrrr-1.gif" class="kg-image" alt="Animated screen capture of loading HRRR data in QGIS" loading="lazy" width="1124" height="750"></figure><p>The HRRR file appears twice in the file browser. That is because it can be loaded as either a normal raster file, or as a <a href="https://docs.qgis.org/3.16/en/docs/user_manual/working_with_mesh/mesh_properties.html">mesh</a> file. Loading it as a raster file is much faster, but it's more difficult to control the appearance of layers, especially temporal data, which is why the second file — the mesh — is chosen above. After the data is loaded, which can take a while (that part isn't shown), we can go through its properties to select the band we want to see:</p><figure class="kg-card kg-image-card"><img src="https://trycatch.dev/content/images/2021/01/qgis-hrrr-temperature.gif" class="kg-image" alt="Animated screen capture of picking the Temperature band in QGIS" loading="lazy" width="1124" height="750"></figure><p>Setting the opacity to 50%, as seen above, helps to retain that orientation given to us by the OSM layer. After we have the desired band showing, we can use the "Identify Features" mode in QGIS to get details about the band at specific locations:</p><figure class="kg-card kg-image-card"><img src="https://trycatch.dev/content/images/2021/01/qgis-hrrr-temperature-data.gif" class="kg-image" alt="Animated screen capture of accessing a single data point from the Temperature band in QGIS" loading="lazy" width="1124" height="750"></figure><p>In this particular data file, it's approximately -4 degrees Celsius in the vicinity of Indianapolis, Indiana. This is a very cursory look at QGIS, but it's enough to show how useful it can be for visualizing meteorological data.</p><h3 id="long-range-forecasts-and-their-projections">Long-range forecasts and their projections</h3><p>To get a long-range forecast, <a href="https://www.ncdc.noaa.gov/data-access/model-data/model-datasets/global-forcast-system-gfs">GFS</a> is a useful model. It's global, and it goes out to more days in the future than is reasonable. GFS data, like that of HRRR, is also downloadable from NOMADS. Accessing it via GDAL, however, poses a slight problem. Armed with knowledge that temperature at 2m above ground level is in band 435, we should be able to do this query just like we did with HRRR:</p><pre><code>$ gdallocationinfo -b 435 -wgs84 gfs.t00z.pgrb2.0p25.f192 -86.1583502 39.7683331
+
+Report:
+  Location: (-345P,201L)
+
+Location is off this file! No further details to report.</code></pre><p>Oops! That's not good. We're using the same coordinates, specified as WGS84. GFS is supposed to have data for the entire globe, so how can the specified location be off the grid? Before digging into that, let's extract the temperature band into a separate file, so that there's less data to deal with. To do that, we can use another GDAL tool, <code>gdal_translate</code>. Its primary purpose is translating between different raster data formats, but it can also be used to extract bands. This is how we can use it to extract a single band and, at the same time, convert it to GeoTIFF:</p><pre><code>$ gdal_translate -b 435 gfs.t00z.pgrb2.0p25.f192 gfs.t00z.pgrb2.0p25.f192-temperature.tif
+
+Input file size is 1440, 721
+0...10...20...30...40...50...60...70...80...90...100 - done.</code></pre><p>Now let's see what <code>gdalinfo</code> can tell us about this band from its own GeoTIFF file:</p><pre><code>Driver: GTiff/GeoTIFF
+Files: gfs.t00z.pgrb2.0p25.f192-temperature.tif
+Size is 1440, 721
+Coordinate System is:
+GEOGCRS["Coordinate System imported from GRIB file",
+    DATUM["unnamed",
+        ELLIPSOID["Sphere",6371229,0,
+            LENGTHUNIT["metre",1,
+                ID["EPSG",9001]]]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433,
+            ID["EPSG",9122]]],
+    CS[ellipsoidal,2],
+        AXIS["latitude",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433,
+                ID["EPSG",9122]]],
+        AXIS["longitude",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433,
+                ID["EPSG",9122]]]]
+Data axis to CRS axis mapping: 2,1
+Origin = (-0.125000000000000,90.125000000000000)
+Pixel Size = (0.250000000000000,-0.250000000000000)
+Metadata:
+  AREA_OR_POINT=Area
+Image Structure Metadata:
+  INTERLEAVE=BAND
+Corner Coordinates:
+Upper Left  (  -0.1250000,  90.1250000) (  0d 7'30.00"W, 90d 7'30.00"N)
+Lower Left  (  -0.1250000, -90.1250000) (  0d 7'30.00"W, 90d 7'30.00"S)
+Upper Right (     359.875,      90.125) (359d52'30.00"E, 90d 7'30.00"N)
+Lower Right (     359.875,     -90.125) (359d52'30.00"E, 90d 7'30.00"S)
+Center      ( 179.8750000,   0.0000000) (179d52'30.00"E,  0d 0' 0.01"N)
+Band 1 Block=1440x1 Type=Float64, ColorInterp=Gray
+  Description = 2[m] HTGL="Specified height level above ground"
+  Metadata:
+    GRIB_COMMENT=Temperature [C]
+    GRIB_DISCIPLINE=0(Meteorological)
+    GRIB_ELEMENT=TMP
+    GRIB_FORECAST_SECONDS=691200 sec
+    GRIB_IDS=CENTER=7(US-NCEP) SUBCENTER=0 MASTER_TABLE=2 LOCAL_TABLE=1 SIGNF_REF_TIME=1(Start_of_Forecast) REF_TIME=2021-01-15T00:00:00Z PROD_STATUS=0(Operational) TYPE=1(Forecast)
+    GRIB_PDS_PDTN=0
+    GRIB_PDS_TEMPLATE_ASSEMBLED_VALUES=0 0 2 0 96 0 0 1 192 103 0 2 255 0 0
+    GRIB_PDS_TEMPLATE_NUMBERS=0 0 2 0 96 0 0 0 1 0 0 0 192 103 0 0 0 0 2 255 0 0 0 0 0
+    GRIB_REF_TIME=1610668800 sec UTC
+    GRIB_SHORT_NAME=2-HTGL
+    GRIB_UNIT=[C]
+    GRIB_VALID_TIME=1611360000 sec UTC</code></pre><p>Yep, it's certainly the band we wanted. But above the band-specific information, there is a clue as to what's wrong. The reported corner coordinates are, approximately, (0, 90) at the upper left and (360, -90) at the lower right. While the Y-coordinates seem fine for latitude, the X-coordinates are not. We want to see longitude represented as -180 to 180, not 0 to 360. That explains why the location information request failed: -86.1583502 really is off the grid here!</p><p>To fix this issue, we can use GDAL's warping capability:</p><pre><code>$ gdalwarp -t_srs "EPSG:4326" -wo SOURCE_EXTRA=100 --config CENTER_LONG 0 gfs.t00z.pgrb2.0p25.f192-temperature.tif gfs.t00z.pgrb2.0p25.f192-temperature-warped.tif
+
+Creating output file that is 1440P x 721L.
+Processing gfs.t00z.pgrb2.0p25.f192-temperature.tif [1/1] : 0...10...20...30...40...50...60...70...80...90...100 - done.</code></pre><p>The above command does a few things. First, it specifies a different coordinate reference system, or spatial reference system (SRS). <a href="https://epsg.io/4326">EPSG:4326</a> is another name for WGS84. Next, it grabs a bit of extra data for the warp procedure, to ensure no gaps exist when stitching. Finally, the config option <code>CENTER_LONG 0</code> is what tells GDAL to recenter the image, which will get us the coordinate range we want:</p><pre><code>$ gdalinfo gfs.t00z.pgrb2.0p25.f192-temperature-warped.tif
+
+Driver: GTiff/GeoTIFF
+Files: gfs.t00z.pgrb2.0p25.f192-temperature-warped.tif
+Size is 1440, 721
+Coordinate System is:
+GEOGCRS["WGS 84",
+    DATUM["World Geodetic System 1984",
+        ELLIPSOID["WGS 84",6378137,298.257223563,
+            LENGTHUNIT["metre",1]]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    ID["EPSG",4326]]
+Data axis to CRS axis mapping: 2,1
+Origin = (-179.999755859375000,90.125000000000000)
+Pixel Size = (0.249999673885899,-0.249999847496904)
+Metadata:
+  AREA_OR_POINT=Area
+Image Structure Metadata:
+  INTERLEAVE=BAND
+Corner Coordinates:
+Upper Left  (-179.9997559,  90.1250000) (179d59'59.12"W, 90d 7'30.00"N)
+Lower Left  (-179.9997559, -90.1248900) (179d59'59.12"W, 90d 7'29.60"S)
+Upper Right ( 179.9997745,  90.1250000) (179d59'59.19"E, 90d 7'30.00"N)
+Lower Right ( 179.9997745, -90.1248900) (179d59'59.19"E, 90d 7'29.60"S)
+Center      (   0.0000093,   0.0000550) (  0d 0' 0.03"E,  0d 0' 0.20"N)
+Band 1 Block=1440x1 Type=Float64, ColorInterp=Gray
+  Description = 2[m] HTGL="Specified height level above ground"
+  Metadata:
+    GRIB_COMMENT=Temperature [C]
+    GRIB_DISCIPLINE=0(Meteorological)
+    GRIB_ELEMENT=TMP
+    GRIB_FORECAST_SECONDS=691200 sec
+    GRIB_IDS=CENTER=7(US-NCEP) SUBCENTER=0 MASTER_TABLE=2 LOCAL_TABLE=1 SIGNF_REF_TIME=1(Start_of_Forecast) REF_TIME=2021-01-15T00:00:00Z PROD_STATUS=0(Operational) TYPE=1(Forecast)
+    GRIB_PDS_PDTN=0
+    GRIB_PDS_TEMPLATE_ASSEMBLED_VALUES=0 0 2 0 96 0 0 1 192 103 0 2 255 0 0
+    GRIB_PDS_TEMPLATE_NUMBERS=0 0 2 0 96 0 0 0 1 0 0 0 192 103 0 0 0 0 2 255 0 0 0 0 0
+    GRIB_REF_TIME=1610668800 sec UTC
+    GRIB_SHORT_NAME=2-HTGL
+    GRIB_UNIT=[C]
+    GRIB_VALID_TIME=1611360000 sec UTC</code></pre><p>That looks much better. The upper left coordinate is now (-180, 90) and lower right is (180, -90). This is what we expect to see. Now that we've confirmed that the corner coordinates look good, we can perform our temperature query against the warped file:</p><pre><code>$ gdallocationinfo -wgs84 gfs.t00z.pgrb2.0p25.f192-temperature-warped.tif -86.1583502 39.7683331
+
+Report:
+  Location: (375P,201L)
+  Band 1:
+    Value: -1.61920776367185</code></pre><p>Hooray, it works! Using this procedure, we can convert any band to an easily queryable format. And, just like with HRRR, if we bring in more bands, we should be able to generate a multi-day forecast from GFS data.</p><p>We're not going to cover this now, but there's another interesting conversion process we could get involved in, if we wanted to access global forecasting data from Deutscher Wetterdienst, the German Meteorological Service. They produce the ICON model, which uses a triangle-based grid system. Thankfully, they have an <a href="https://www.dwd.de/DE/leistungen/opendata/help/modelle/Opendata_cdo_EN.pdf?__blob=publicationFile&amp;v=3">extraordinarily well-written document</a> describing how to convert that data to the familiar GRIB2 format.</p><p>Next up, we'll switch gears and look at performing geocoding and reverse geocoding using a locally-hosted service.</p>
+                <section class="m-tags in-post">
+                  <h3 class="m-submenu-title">Tags</h3>
+                  <ul>
+                      <li>
+                        <a href="/tag/weather/" title="Weather">Weather</a>
+                      </li>
+                  </ul>
+                </section>
+            </div>
+          </div>
+        </div>
+          <section class="m-subscribe-section">
+            <div class="l-wrapper in-post">
+              <div class="m-subscribe-section__content">
+                <div class="m-subscribe-section__text">
+                  <h4 class="m-subscribe-section__title">Subscribe to our newsletter</h4>
+                  <p class="m-subscribe-section__description">
+                    Get the latest posts delivered right to your inbox.
+                  </p>
+                </div>
+                <div class="m-subscribe-section__form">
+                  
+<div class="m-subscribe-section__form">
+  <form data-members-form="subscribe" id="newsletter-form" class="m-subscribe-section__container">
+    <div class="m-subscribe__form">
+      <div class="pos-relative">
+        <label for="newsletter-input" class="sr-only">Your email address</label>
+        <input data-members-email id="newsletter-input" class="m-input in-subscribe-section" type="email"
+          placeholder="Your email address" required />
+      </div>
+      <button id="newsletter-button" class="m-button primary block" type="submit">Subscribe</button>
+    </div>
+    <div class="m-subscribe__success">
+      <header class="m-heading no-margin">
+        <img src="/assets/images/success.png?v=d450aebd8c" alt="Success!" class="m-subscribe__success_icon">
+        <p class="m-heading__description in-newsletter-form">
+          Now check your inbox and click the link to confirm your subscription.
+        </p>
+      </header>
+    </div>
+    <p class="m-subscribe__invalid m-small-text">
+      Please enter a valid email address
+    </p>
+    <p class="m-subscribe__error m-small-text">
+      Oops! There was an error sending the email, please try later.
+    </p>
+  </form>
+</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        <section class="m-recommended">
+          <div class="l-wrapper in-recommended">
+            <h3 class="m-section-title in-recommended">Recommended for you</h3>
+            <div class="m-recommended-articles">
+              <div class="m-recommended-slider glide js-recommended-slider">
+                <div class="glide__track" data-glide-el="track">
+                  <div class="glide__slides">
+                    
+    <div class="m-recommended-slider__item glide__slide">
+  <article class="m-article-card  post tag-blog tag-python tag-raspberry-pi tag-3d-printing tag-3d-modeling">
+    <div class="m-article-card__picture">
+      <a href="/blog/raspberry-pi-powered-webcam/" class="m-article-card__picture-link" aria-hidden="true" tabindex="-1"></a>
+        <img class="m-article-card__picture-background" src="https://images.unsplash.com/photo-1587919057555-d728ff5beac3?ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;fm&#x3D;jpg&amp;crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;w&#x3D;2000&amp;fit&#x3D;max&amp;ixid&#x3D;eyJhcHBfaWQiOjExNzczfQ" loading="lazy" alt="">
+    </div>
+      <div class="m-article-card__info no-tag">
+      <a href="/blog/raspberry-pi-powered-webcam/" class="m-article-card__info-link" aria-label="Raspberry Pi-powered webcam">
+        <div>
+          <h2 class="m-article-card__title js-article-card-title " title="Raspberry Pi-powered webcam">
+            Raspberry Pi-powered webcam
+          </h2>
+        </div>
+        <div class="m-article-card__timestamp">
+          <span>Aug 30, 2020</span>
+          <span>&bull;</span>
+          <span>7 min read</span>
+        </div>
+      </a>
+    </div>
+  </article>
+    </div>
+    <div class="m-recommended-slider__item glide__slide">
+  <article class="m-article-card  post tag-blog tag-docker tag-linux tag-self-hosting">
+    <div class="m-article-card__picture">
+      <a href="/blog/self-hosting-a-streaming-video-platform/" class="m-article-card__picture-link" aria-hidden="true" tabindex="-1"></a>
+        <img class="m-article-card__picture-background" src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;fm&#x3D;jpg&amp;crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;w&#x3D;2000&amp;fit&#x3D;max&amp;ixid&#x3D;eyJhcHBfaWQiOjExNzczfQ" loading="lazy" alt="">
+    </div>
+      <div class="m-article-card__info no-tag">
+      <a href="/blog/self-hosting-a-streaming-video-platform/" class="m-article-card__info-link" aria-label="Self-hosting a streaming video platform">
+        <div>
+          <h2 class="m-article-card__title js-article-card-title " title="Self-hosting a streaming video platform">
+            Self-hosting a streaming video platform
+          </h2>
+        </div>
+        <div class="m-article-card__timestamp">
+          <span>Sep 12, 2020</span>
+          <span>&bull;</span>
+          <span>7 min read</span>
+        </div>
+      </a>
+    </div>
+  </article>
+    </div>
+    <div class="m-recommended-slider__item glide__slide">
+  <article class="m-article-card  post tag-blog tag-docker tag-linux tag-self-hosting">
+    <div class="m-article-card__picture">
+      <a href="/blog/self-hosting-a-video-chat-system/" class="m-article-card__picture-link" aria-hidden="true" tabindex="-1"></a>
+        <img class="m-article-card__picture-background" src="https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?ixlib&#x3D;rb-1.2.1&amp;q&#x3D;80&amp;fm&#x3D;jpg&amp;crop&#x3D;entropy&amp;cs&#x3D;tinysrgb&amp;w&#x3D;2000&amp;fit&#x3D;max&amp;ixid&#x3D;eyJhcHBfaWQiOjExNzczfQ" loading="lazy" alt="">
+    </div>
+      <div class="m-article-card__info no-tag">
+      <a href="/blog/self-hosting-a-video-chat-system/" class="m-article-card__info-link" aria-label="Self-hosting a video chat system">
+        <div>
+          <h2 class="m-article-card__title js-article-card-title " title="Self-hosting a video chat system">
+            Self-hosting a video chat system
+          </h2>
+        </div>
+        <div class="m-article-card__timestamp">
+          <span>Sep 10, 2020</span>
+          <span>&bull;</span>
+          <span>4 min read</span>
+        </div>
+      </a>
+    </div>
+  </article>
+    </div>
+                  </div>
+                </div>
+                <div data-glide-el="controls" class="glide__arrows js-controls">
+                  <button data-glide-dir="<" class="m-icon-button filled in-recommended-articles glide-prev" aria-label="Previous">
+                    <span class="icon-arrow-left" aria-hidden="true"></span>
+                  </button>
+                  <button data-glide-dir=">" class="m-icon-button filled in-recommended-articles glide-next" aria-label="Next">
+                    <span class="icon-arrow-right" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+    </div>
+  </article>
+</main>
+
+
+
+    
+<div class="m-search js-search" role="dialog" aria-modal="true" aria-label="Search">
+  <button class="m-icon-button outlined as-close-search js-close-search" aria-label="Close search">
+    <span class="icon-close" aria-hidden="true"></span>
+  </button>
+  <div class="m-search__content">
+    <form class="m-search__form">
+      <div class="pos-relative">
+        <span class="icon-search m-search-icon" aria-hidden="true"></span>
+        <label for="search-input" class="sr-only">
+          Type to search
+        </label>
+        <input id="search-input" type="text" class="m-input in-search js-input-search" placeholder="Type to search">
+      </div>
+    </form>
+    <div class="js-search-results hide"></div>
+    <p class="m-not-found align-center hide js-no-results">
+      No results for your search, please try with something else.
+    </p>
+  </div>
+</div>
+
+    
+<footer class="m-footer">
+  <div class="m-footer__content">
+    <p class="m-footer-copyright">
+      <span>trycatch.dev &copy; 2021</span>
+    </p>
+
+    <nav class="m-footer-social">
+        <a href="https://twitter.com/arktronic" target="_blank" rel="noopener" aria-label="Twitter">
+          <span class="icon-twitter" aria-hidden="true"></span>
+        </a>
+      <a href="https://trycatch.dev/rss.xml" aria-label="RSS">
+        <span class="icon-rss" aria-hidden="true"></span>
+      </a>
+    </nav>
+    <p class="m-footer-copyright jslicense">
+      <a href="/assets/html/javascript.html?v=d450aebd8c" rel="jslicense">JavaScript license information</a>
+    </p>
+  </div>
+</footer>
+
+    <div class="m-alert success subscribe js-alert" data-notification="subscribe">
+  Great! You&#x27;ve successfully subscribed.
+  <button class="m-alert__close js-notification-close" aria-label="Close">
+    <span class="icon-close"></span>
+  </button>
+</div>
+
+<div class="m-alert success signup js-alert" data-notification="signup">
+  Great! Next, complete checkout for full access.
+  <button class="m-alert__close js-notification-close" aria-label="Close">
+    <span class="icon-close"></span>
+  </button>
+</div>
+
+<div class="m-alert success signin js-alert" data-notification="signin">
+  Welcome back! You&#x27;ve successfully signed in.
+  <button class="m-alert__close js-notification-close" aria-label="Close">
+    <span class="icon-close"></span>
+  </button>
+</div>
+
+<div class="m-alert success checkout js-alert" data-notification="checkout">
+  Success! Your account is fully activated, you now have access to all content.
+  <button class="m-alert__close js-notification-close" aria-label="Close">
+    <span class="icon-close"></span>
+  </button>
+</div>
+    <script crossorigin="anonymous" src="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver%2CPromise%2CArray.prototype.includes%2CString.prototype.endsWith%2CString.prototype.startsWith%2CObject.assign%2CNodeList.prototype.forEach"></script>
+    <script defer src="/assets/js/manifest.js?v=d450aebd8c"></script>
+    <script defer src="/assets/js/vendor/content-api.min.js?v=d450aebd8c"></script>
+    <script defer src="/assets/js/vendor.js?v=d450aebd8c"></script>
+    <script defer src="/assets/js/app.js?v=d450aebd8c"></script>
+    <script defer src="/assets/js/prism.js?v=d450aebd8c"></script>
+
+      <script defer src="/assets/js/post.js?v=d450aebd8c"></script>
+
+
+    <script type="text/javascript">
+    document.body.classList.add('line-numbers');
+    document.querySelectorAll('a.in-share').forEach(a => {
+        a.classList.add('js-tooltip');
+        a.dataset.tippyContent = 'Share';
+    });
+</script>
+<script type="text/javascript">
+    if (document.location.hostname == 'trycatch.dev') {
+        window.goatcounter = {
+            endpoint: 'https://count-trycatch.arktronic.com/count',
+        }
+        var s = document.createElement('script');
+        s.type = 'text/javascript';
+        s.src = '//count-trycatch.arktronic.com/count.js';
+        document.getElementsByTagName('head')[0].appendChild(s);
+	}
+</script>
+  </body>
+</html>
